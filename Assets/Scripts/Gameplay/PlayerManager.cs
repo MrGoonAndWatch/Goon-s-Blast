@@ -2,18 +2,19 @@ using System.IO;
 using Assets.Scripts.Constants;
 using Newtonsoft.Json;
 using Photon.Pun;
+using Photon.Realtime;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : MonoBehaviourPunCallbacks
 {
     private Canvas GameOverCanvas;
     private TMP_Text WinningPlayerDisplay;
 
     private PhotonView _photonView;
     private PlayerController[] _playerInstances;
-    private bool _initializedPlayerList;
+    private bool _refreshPlayerList = true;
     private bool _matchEnded;
 
     private void Awake()
@@ -40,16 +41,37 @@ public class PlayerManager : MonoBehaviour
     private void Update()
     {
         if (!_photonView.IsMine) return;
-        if (!_initializedPlayerList) RefreshPlayerList();
+        if (_refreshPlayerList) RefreshPlayerList();
 
         CheckForEndOfMatch();
     }
 
     private void LoadLevel()
     {
-        // TODO: Get this data in some network friendly way (and not hard coded!).
-        // Clients all download to /DownloadedLevels/ folder then load from there if not host?
-        var levelDataJson = File.ReadAllText(Path.Join(Application.persistentDataPath, "CustomLevels", "TestLevel.level"));
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // TODO: Don't hard code these values.
+            // TODO: Probably need sub-checks for downloaded custom levels vs created custom levels, and Campaign or VS maps.
+            var customLevel = true;
+            var levelFolder = customLevel ? "CustomLevels" :  "Campaign";
+            var selectedLevel = "TestLevel.level";
+
+            var levelDataJson = File.ReadAllText(Path.Join(Application.persistentDataPath, levelFolder, selectedLevel));
+            _photonView.RPC(nameof(LoadLevelFromData), RpcTarget.OthersBuffered, levelDataJson);
+            // TODO: Make this a coroutine or async.
+            LoadLevel(levelDataJson);
+        }
+    }
+
+    [PunRPC]
+    private void LoadLevelFromData(string levelDataJson)
+    {
+        // TODO: Make this a coroutine or async.
+        LoadLevel(levelDataJson);
+    }
+
+    private void LoadLevel(string levelDataJson)
+    {
         var levelData = JsonConvert.DeserializeObject<LevelData>(levelDataJson);
         var levelLoader = FindObjectOfType<LevelLoader>();
         if (levelLoader == null)
@@ -57,22 +79,20 @@ public class PlayerManager : MonoBehaviour
         else
             levelLoader.LoadLevel(levelData);
     }
-
-    // TODO: Call this when new players join the room (if that's possible).
+    
     private void RefreshPlayerList()
     {
         var numPlayers = (int)PhotonNetwork.CurrentRoom.PlayerCount;
         var playersFound = FindObjectsOfType<PlayerController>();
         if (playersFound.Length != numPlayers) return;
         _playerInstances = playersFound;
-        _initializedPlayerList = true;
+        _refreshPlayerList = false;
     }
 
     // TODO: Alternate method for co-op mode where ends on win condition or all players dead.
     private void CheckForEndOfMatch()
     {
-        if (_matchEnded) return;
-        if (_playerInstances.Length <= 1) return;
+        if (_refreshPlayerList || _matchEnded || _playerInstances.Length <= 1) return;
 
         var playersRemaining = 0;
         var lastAliveName = "";
@@ -132,5 +152,15 @@ public class PlayerManager : MonoBehaviour
         var destructables = FindObjectsOfType<Destructable>();
         for (var i = 0; i < destructables.Length; i++)
             destructables[i].SetPowerupSpawner(spawner);
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        _refreshPlayerList = true;
+    }
+
+    public override void OnPlayerLeftRoom(Player oldPlayer)
+    {
+        _refreshPlayerList = true;
     }
 }
