@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Assets.Scripts.Constants;
+using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
@@ -27,6 +29,10 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private Transform _mapEditList;
         [SerializeField] private GameObject _mapSelectPrefab;
         [SerializeField] private TMP_Text _selectedMapLabel;
+
+        private GameConstants.OfficialLevelList _officialLevelList;
+        private List<string> _customVsLevels;
+        private List<string> _customCampaignLevels;
 
         private void Awake()
         {
@@ -157,10 +163,13 @@ namespace Assets.Scripts.MainMenu
                 item.SetUp(roomList[j]);
             }
         }
-
+        
         private IEnumerator StartRefreshLevelList()
         {
-            RefreshLevelList();
+            LoadOfficialLevelList();
+            LoadCustomLevelList();
+            RefreshCustomVsLevelList();
+            RefreshOfficialVsLevelList();
             yield return null;
         }
 
@@ -175,29 +184,64 @@ namespace Assets.Scripts.MainMenu
             Instance._selectedMapLabel.text = displayText;
         }
 
-        private void RefreshLevelList()
+        private void LoadOfficialLevelList()
         {
-            // TODO: Add folder support somehow... At a min need official files vs custom levels.
-            var customLevelDir = Path.Join(Application.persistentDataPath, "CustomLevels");
-            if (!Directory.Exists(customLevelDir))
-            {
-                Debug.LogError($"Couldn't load levels... Directory '{customLevelDir}' does not exist.");
-                return;
-            }
+            var officialLevelListJson = Resources.Load(GameConstants.LevelFilePaths.LevelListFilePath).ToString();
+            _officialLevelList = JsonConvert.DeserializeObject<GameConstants.OfficialLevelList>(officialLevelListJson);
+        }
 
+        private void LoadCustomLevelList()
+        {
+            var customLevelDir = Path.Join(Application.persistentDataPath, GameConstants.LevelFilePaths.CustomLevelFolder);
+            var customVsLevelsDir = Path.Join(customLevelDir, GameConstants.LevelFilePaths.VersusFolder);
+            var customCampaignLevelsDir = Path.Join(customLevelDir, GameConstants.LevelFilePaths.CampaignFolder);
+            if (!Directory.Exists(customVsLevelsDir))
+                Directory.CreateDirectory(customVsLevelsDir);
+            if (!Directory.Exists(customCampaignLevelsDir))
+                Directory.CreateDirectory(customCampaignLevelsDir);
+
+            _customVsLevels = Directory.GetFiles(customVsLevelsDir).ToList();
+            _customCampaignLevels = Directory.GetFiles(customCampaignLevelsDir).ToList();
+        }
+
+        public void RefreshOfficialCampaignLevelList()
+        {
+            RefreshMapLists(_officialLevelList.CampaignLevels, true);
+        }
+
+        public void RefreshOfficialVsLevelList()
+        {
+            RefreshMapLists(_officialLevelList.VsLevels, true);
+        }
+
+        public void RefreshCustomCampaignLevelList()
+        {
+            RefreshMapLists(_customCampaignLevels, false);
+        }
+
+        public void RefreshCustomVsLevelList()
+        {
+            RefreshMapLists(_customVsLevels, false);
+        }
+
+        private void RefreshMapLists(List<string> mapList, bool officialLevels)
+        {
             for (var i = _mapList.childCount - 1; i >= 0; i--)
                 Destroy(_mapList.GetChild(i).gameObject);
-            for (var i = _mapEditList.childCount - 1; i >= 0; i--)
-                Destroy(_mapEditList.GetChild(i).gameObject);
+            if(!officialLevels)
+                for (var i = _mapEditList.childCount - 1; i >= 0; i--)
+                    Destroy(_mapEditList.GetChild(i).gameObject);
 
-            var customLevels = Directory.GetFiles(customLevelDir);
-            for (var i = 0; i < customLevels.Length; i++)
+            for (var i = 0; i < mapList.Count; i++)
             {
-                var displayName = Path.GetFileName(customLevels[i]);
+                var displayName = Path.GetFileName(mapList[i]);
                 var mapSelectItem = Instantiate(_mapSelectPrefab, _mapList).GetComponent<MapSelectItem>();
-                mapSelectItem.SetUp(customLevels[i], displayName, false);
-                var editMapSelectItem = Instantiate(_mapSelectPrefab, _mapEditList).GetComponent<MapSelectItem>();
-                editMapSelectItem.SetUp(customLevels[i], displayName, true);
+                mapSelectItem.SetUp(mapList[i], displayName, false, officialLevels);
+                if (!officialLevels)
+                {
+                    var editMapSelectItem = Instantiate(_mapSelectPrefab, _mapEditList).GetComponent<MapSelectItem>();
+                    editMapSelectItem.SetUp(mapList[i], displayName, true, officialLevels);
+                }
             }
         }
 

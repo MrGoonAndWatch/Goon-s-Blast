@@ -9,18 +9,20 @@ public class MapSelectItem : MonoBehaviour
     
     private bool _forEditor;
     private string _filepath;
+    private bool _officialLevel;
 
-    public void SetUp(string filepath, string displayName, bool forEditor)
+    public void SetUp(string filepath, string displayName, bool forEditor, bool officialLevel)
     {
         _filepath = filepath;
         // TODO: Read file here then set game type via level data to replace hard coded 'VS'!
         _roomNameText.text = $"VS - {displayName}";
         _forEditor = forEditor;
+        _officialLevel = officialLevel;
     }
 
     public void OnClick()
     {
-        RoomManager.SetMap(_filepath);
+        RoomManager.SetMap(_filepath, _officialLevel);
         if (_forEditor)
         {
             Launcher.OpenEditor();

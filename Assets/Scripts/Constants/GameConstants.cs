@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.IO;
+
 namespace Assets.Scripts.Constants
 {
     public static class GameConstants
@@ -53,6 +56,23 @@ namespace Assets.Scripts.Constants
                 PowerupBombUp,
                 PowerupRemote
             };
+        }
+
+        public class OfficialLevelList
+        {
+            public List<string> CampaignLevels { get; set; }
+            public List<string> VsLevels { get; set; }
+        }
+
+        public static class LevelFilePaths
+        {
+            public const string CustomLevelFolder = "CustomLevels";
+            public const string CampaignFolder = "Campaign";
+            public const string VersusFolder = "Versus";
+            private const string BaseLevelPath = "Levels";
+            public static string CampaignLevelResourceFolderPath = $"{BaseLevelPath}/Campaign";
+            public static string VsLevelResourceFolderPath = $"{BaseLevelPath}/Versus";
+            public static string LevelListFilePath = $"{BaseLevelPath}/LevelList";
         }
     }
 }

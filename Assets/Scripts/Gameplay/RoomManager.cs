@@ -8,6 +8,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public static RoomManager Instance;
 
     private string _selectedMapFilepath;
+    private bool _officialMap;
 
     private void Awake()
     {
@@ -44,12 +45,23 @@ public class RoomManager : MonoBehaviourPunCallbacks
         return Instance._selectedMapFilepath;
     }
 
-    public static void ClearMap()
+    public static bool IsOfficialMap()
     {
-        SetMap("");
+        if (Instance == null)
+        {
+            Debug.LogError("Cannot Check if IsOfficialMap. No RoomManager instance found!");
+            return false;
+        }
+
+        return Instance._officialMap;
     }
 
-    public static void SetMap(string mapFilepath)
+    public static void ClearMap()
+    {
+        SetMap("", false);
+    }
+
+    public static void SetMap(string mapFilepath, bool officialMap)
     {
         if (Instance == null)
         {
@@ -57,6 +69,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
             return;
         }
         Instance._selectedMapFilepath = mapFilepath;
+        Instance._officialMap = officialMap;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)

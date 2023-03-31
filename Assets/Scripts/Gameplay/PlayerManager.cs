@@ -50,8 +50,12 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            var levelDataJson = File.ReadAllText(RoomManager.GetMap());
-            //var levelDataJson = File.ReadAllText(Path.Join(Application.persistentDataPath, levelFolder, selectedLevel));
+            string levelDataJson;
+            // TODO: Need support for campaign official maps.
+            if (RoomManager.IsOfficialMap())
+                levelDataJson = Resources.Load(Path.Join(GameConstants.LevelFilePaths.VsLevelResourceFolderPath, RoomManager.GetMap())).ToString();
+            else
+                levelDataJson = File.ReadAllText(RoomManager.GetMap());
             _photonView.RPC(nameof(LoadLevelFromData), RpcTarget.OthersBuffered, levelDataJson);
             // TODO: Make this a coroutine or async.
             LoadLevel(levelDataJson);

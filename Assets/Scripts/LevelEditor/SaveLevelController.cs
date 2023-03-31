@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Assets.Scripts.Constants;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
@@ -213,7 +214,8 @@ public class SaveLevelController : MonoBehaviour
 
     private static string GetCustomLevelDirPath()
     {
-        return Path.Combine(Application.persistentDataPath, "CustomLevels");
+        // TODO: Contextually select Versus folder or Campaign folder based on file type.
+        return Path.Combine(Application.persistentDataPath, GameConstants.LevelFilePaths.CustomLevelFolder, GameConstants.LevelFilePaths.VersusFolder);
     }
 
     private string GetLevelFilepath()
