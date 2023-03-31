@@ -9,7 +9,7 @@ public class TilePrefabLookup : MonoBehaviour
 
     private Dictionary<TileType, GameObject> _dictLookup;
 
-    private void Start()
+    private void Awake()
     {
         _dictLookup = new Dictionary<TileType, GameObject>();
 

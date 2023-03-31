@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace Assets.Scripts.Constants
 {
     public static class GameConstants
@@ -20,6 +18,21 @@ namespace Assets.Scripts.Constants
             FirepowerUp = 2,
             BombsUp = 3,
             RemoteBombs = 4,
+        }
+
+        public enum SaveLevelResult
+        {
+            Success = 1,
+            Failure = 2,
+            ConfirmOverwrite = 3,
+        }
+
+        public enum SaveWindowState
+        {
+            ParameterWindow = 0,
+            ErrorWindow = 1,
+            OverwriteWindow = 2,
+            SuccessWindow = 3
         }
 
         public static class SpawnablePrefabs

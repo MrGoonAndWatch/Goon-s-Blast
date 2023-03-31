@@ -2,11 +2,9 @@ using Assets.Scripts.Constants;
 using Photon.Pun;
 using UnityEngine;
 
-public class Destructable : MonoBehaviour
+public class Destructable : TileWithProperties
 {
-    public GameConstants.DestructableContents Contains;
-    [Tooltip("The chance (between 0 and 1) that this container will spawn the specified item when destroyed.")]
-    public float SpawnPowerupChance = 1.0f;
+    private DestructibleBlockProperties _properties;
 
     private bool _initialized;
     private PowerupSpawner _powerupSpawner;
@@ -26,5 +24,29 @@ public class Destructable : MonoBehaviour
                 _powerupSpawner.SpawnPowerup(this);
             Destroy(gameObject);
         }
+    }
+
+    public override void SetDefaultProperties()
+    {
+        _properties = new DestructibleBlockProperties
+        {
+            Contents = GameConstants.DestructableContents.Nothing,
+            SpawnPowerupChance = 0,
+        };
+    }
+
+    public override void LoadProperties(string propertyJson)
+    {
+        _properties = LoadProperties<DestructibleBlockProperties>(propertyJson);
+    }
+
+    public GameConstants.DestructableContents GetContents()
+    {
+        return _properties.Contents;
+    }
+
+    public float GetSpawnChance()
+    {
+        return _properties.SpawnPowerupChance;
     }
 }

@@ -50,13 +50,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            // TODO: Don't hard code these values.
-            // TODO: Probably need sub-checks for downloaded custom levels vs created custom levels, and Campaign or VS maps.
-            var customLevel = true;
-            var levelFolder = customLevel ? "CustomLevels" :  "Campaign";
-            var selectedLevel = "TestLevel.level";
-
-            var levelDataJson = File.ReadAllText(Path.Join(Application.persistentDataPath, levelFolder, selectedLevel));
+            var levelDataJson = File.ReadAllText(RoomManager.GetMap());
+            //var levelDataJson = File.ReadAllText(Path.Join(Application.persistentDataPath, levelFolder, selectedLevel));
             _photonView.RPC(nameof(LoadLevelFromData), RpcTarget.OthersBuffered, levelDataJson);
             // TODO: Make this a coroutine or async.
             LoadLevel(levelDataJson);

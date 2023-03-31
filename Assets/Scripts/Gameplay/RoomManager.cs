@@ -7,6 +7,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
 {
     public static RoomManager Instance;
 
+    private string _selectedMapFilepath;
+
     private void Awake()
     {
         if (Instance != null)
@@ -29,6 +31,32 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         base.OnDisable();
         SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    public static string GetMap()
+    {
+        if (Instance == null)
+        {
+            Debug.LogError("Cannot GetMap. No RoomManager instance found!");
+            return null;
+        }
+
+        return Instance._selectedMapFilepath;
+    }
+
+    public static void ClearMap()
+    {
+        SetMap("");
+    }
+
+    public static void SetMap(string mapFilepath)
+    {
+        if (Instance == null)
+        {
+            Debug.LogError("Cannot SetMap. No RoomManager instance found!");
+            return;
+        }
+        Instance._selectedMapFilepath = mapFilepath;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)

@@ -171,17 +171,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""cd818bfe-6cdc-40bf-a5b6-5b913b670019"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
-                    ""action"": ""Camera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""2afd9813-b92f-4c04-9cb6-ab2ed094958f"",
                     ""path"": ""<Gamepad>/buttonWest"",
                     ""interactions"": """",
@@ -289,6 +278,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""Run"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cd818bfe-6cdc-40bf-a5b6-5b913b670019"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""Camera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -376,6 +376,33 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": ""StickDeadzone"",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MouseRotateCameraClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""c6116b32-88e6-4684-9c54-4a18ce5d5432"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MouseRotateCameraDrag"",
+                    ""type"": ""Value"",
+                    ""id"": ""5e044419-29c1-43a2-b967-1afea171f1d8"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""PropertiesMenu"",
+                    ""type"": ""Button"",
+                    ""id"": ""4c44fe3b-a742-4ccb-9f9c-b5d2097d4b7f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -617,9 +644,165 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""KeyboardMouse"",
-                    ""action"": ""RotateCamera"",
+                    ""action"": ""MouseRotateCameraDrag"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0d83673-76be-460e-9cb8-1b9cbaf53ee5"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""PropertiesMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5c564d2f-7e0a-4102-8f8e-397012e5ee21"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""PropertiesMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a8390f66-e263-49d8-8e92-bcacf763363e"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""MouseRotateCameraClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Editor-SaveMenu"",
+            ""id"": ""ec466d60-4cdc-4bed-b50c-67af856ea9b9"",
+            ""actions"": [
+                {
+                    ""name"": ""Confirm"",
+                    ""type"": ""Button"",
+                    ""id"": ""a9e65d2c-95a1-47ef-a3bc-0261ef68c646"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Cancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""14173443-e7c4-4484-8537-d039077101b0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Move Cursor"",
+                    ""type"": ""Value"",
+                    ""id"": ""9d6b3b54-f2f3-46ba-a20e-a17722f961ce"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""efe97afe-036b-4245-82d9-6652dfa9d152"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Confirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b14979dc-6508-4d8a-8155-4a18c4b19533"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e627616e-f9ff-47a6-9e86-29db9be681d2"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""ArrowKeys"",
+                    ""id"": ""6d2c6896-b732-4a99-a886-f770697aad7a"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""bce6eb56-76fd-466c-aa77-f49586ddb214"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""1f548b3d-81d0-47eb-86b5-e27bd6e3a318"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""024ffe5d-3687-493d-bd38-d16a76283403"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""240032de-385a-4115-aff8-3c859d0e619c"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move Cursor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -674,6 +857,14 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Editor_SaveMenu = m_Editor.FindAction("SaveMenu", throwIfNotFound: true);
         m_Editor_HelpMenu = m_Editor.FindAction("HelpMenu", throwIfNotFound: true);
         m_Editor_RotateCamera = m_Editor.FindAction("RotateCamera", throwIfNotFound: true);
+        m_Editor_MouseRotateCameraClick = m_Editor.FindAction("MouseRotateCameraClick", throwIfNotFound: true);
+        m_Editor_MouseRotateCameraDrag = m_Editor.FindAction("MouseRotateCameraDrag", throwIfNotFound: true);
+        m_Editor_PropertiesMenu = m_Editor.FindAction("PropertiesMenu", throwIfNotFound: true);
+        // Editor-SaveMenu
+        m_EditorSaveMenu = asset.FindActionMap("Editor-SaveMenu", throwIfNotFound: true);
+        m_EditorSaveMenu_Confirm = m_EditorSaveMenu.FindAction("Confirm", throwIfNotFound: true);
+        m_EditorSaveMenu_Cancel = m_EditorSaveMenu.FindAction("Cancel", throwIfNotFound: true);
+        m_EditorSaveMenu_MoveCursor = m_EditorSaveMenu.FindAction("Move Cursor", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -823,6 +1014,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Editor_SaveMenu;
     private readonly InputAction m_Editor_HelpMenu;
     private readonly InputAction m_Editor_RotateCamera;
+    private readonly InputAction m_Editor_MouseRotateCameraClick;
+    private readonly InputAction m_Editor_MouseRotateCameraDrag;
+    private readonly InputAction m_Editor_PropertiesMenu;
     public struct EditorActions
     {
         private @PlayerControls m_Wrapper;
@@ -836,6 +1030,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @SaveMenu => m_Wrapper.m_Editor_SaveMenu;
         public InputAction @HelpMenu => m_Wrapper.m_Editor_HelpMenu;
         public InputAction @RotateCamera => m_Wrapper.m_Editor_RotateCamera;
+        public InputAction @MouseRotateCameraClick => m_Wrapper.m_Editor_MouseRotateCameraClick;
+        public InputAction @MouseRotateCameraDrag => m_Wrapper.m_Editor_MouseRotateCameraDrag;
+        public InputAction @PropertiesMenu => m_Wrapper.m_Editor_PropertiesMenu;
         public InputActionMap Get() { return m_Wrapper.m_Editor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -872,6 +1069,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @RotateCamera.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnRotateCamera;
                 @RotateCamera.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnRotateCamera;
                 @RotateCamera.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnRotateCamera;
+                @MouseRotateCameraClick.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraClick;
+                @MouseRotateCameraClick.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraClick;
+                @MouseRotateCameraClick.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraClick;
+                @MouseRotateCameraDrag.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraDrag;
+                @MouseRotateCameraDrag.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraDrag;
+                @MouseRotateCameraDrag.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseRotateCameraDrag;
+                @PropertiesMenu.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
+                @PropertiesMenu.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
+                @PropertiesMenu.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
             }
             m_Wrapper.m_EditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -903,10 +1109,68 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @RotateCamera.started += instance.OnRotateCamera;
                 @RotateCamera.performed += instance.OnRotateCamera;
                 @RotateCamera.canceled += instance.OnRotateCamera;
+                @MouseRotateCameraClick.started += instance.OnMouseRotateCameraClick;
+                @MouseRotateCameraClick.performed += instance.OnMouseRotateCameraClick;
+                @MouseRotateCameraClick.canceled += instance.OnMouseRotateCameraClick;
+                @MouseRotateCameraDrag.started += instance.OnMouseRotateCameraDrag;
+                @MouseRotateCameraDrag.performed += instance.OnMouseRotateCameraDrag;
+                @MouseRotateCameraDrag.canceled += instance.OnMouseRotateCameraDrag;
+                @PropertiesMenu.started += instance.OnPropertiesMenu;
+                @PropertiesMenu.performed += instance.OnPropertiesMenu;
+                @PropertiesMenu.canceled += instance.OnPropertiesMenu;
             }
         }
     }
     public EditorActions @Editor => new EditorActions(this);
+
+    // Editor-SaveMenu
+    private readonly InputActionMap m_EditorSaveMenu;
+    private IEditorSaveMenuActions m_EditorSaveMenuActionsCallbackInterface;
+    private readonly InputAction m_EditorSaveMenu_Confirm;
+    private readonly InputAction m_EditorSaveMenu_Cancel;
+    private readonly InputAction m_EditorSaveMenu_MoveCursor;
+    public struct EditorSaveMenuActions
+    {
+        private @PlayerControls m_Wrapper;
+        public EditorSaveMenuActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Confirm => m_Wrapper.m_EditorSaveMenu_Confirm;
+        public InputAction @Cancel => m_Wrapper.m_EditorSaveMenu_Cancel;
+        public InputAction @MoveCursor => m_Wrapper.m_EditorSaveMenu_MoveCursor;
+        public InputActionMap Get() { return m_Wrapper.m_EditorSaveMenu; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(EditorSaveMenuActions set) { return set.Get(); }
+        public void SetCallbacks(IEditorSaveMenuActions instance)
+        {
+            if (m_Wrapper.m_EditorSaveMenuActionsCallbackInterface != null)
+            {
+                @Confirm.started -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnConfirm;
+                @Confirm.performed -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnConfirm;
+                @Confirm.canceled -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnConfirm;
+                @Cancel.started -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnCancel;
+                @Cancel.performed -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnCancel;
+                @Cancel.canceled -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnCancel;
+                @MoveCursor.started -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnMoveCursor;
+                @MoveCursor.performed -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnMoveCursor;
+                @MoveCursor.canceled -= m_Wrapper.m_EditorSaveMenuActionsCallbackInterface.OnMoveCursor;
+            }
+            m_Wrapper.m_EditorSaveMenuActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Confirm.started += instance.OnConfirm;
+                @Confirm.performed += instance.OnConfirm;
+                @Confirm.canceled += instance.OnConfirm;
+                @Cancel.started += instance.OnCancel;
+                @Cancel.performed += instance.OnCancel;
+                @Cancel.canceled += instance.OnCancel;
+                @MoveCursor.started += instance.OnMoveCursor;
+                @MoveCursor.performed += instance.OnMoveCursor;
+                @MoveCursor.canceled += instance.OnMoveCursor;
+            }
+        }
+    }
+    public EditorSaveMenuActions @EditorSaveMenu => new EditorSaveMenuActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     public InputControlScheme KeyboardMouseScheme
     {
@@ -946,5 +1210,14 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnSaveMenu(InputAction.CallbackContext context);
         void OnHelpMenu(InputAction.CallbackContext context);
         void OnRotateCamera(InputAction.CallbackContext context);
+        void OnMouseRotateCameraClick(InputAction.CallbackContext context);
+        void OnMouseRotateCameraDrag(InputAction.CallbackContext context);
+        void OnPropertiesMenu(InputAction.CallbackContext context);
+    }
+    public interface IEditorSaveMenuActions
+    {
+        void OnConfirm(InputAction.CallbackContext context);
+        void OnCancel(InputAction.CallbackContext context);
+        void OnMoveCursor(InputAction.CallbackContext context);
     }
 }

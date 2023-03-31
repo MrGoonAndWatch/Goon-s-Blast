@@ -1,4 +1,3 @@
-using Photon.Pun;
 using UnityEngine;
 
 public class LevelLoader : MonoBehaviour
@@ -23,7 +22,18 @@ public class LevelLoader : MonoBehaviour
         var tilePos = new Vector3(tile.X, tile.Y, tile.Z);
         var tilePrefab = _tilePrefabLookup.GetPrefab(tile.Type);
         if (tilePrefab.GetComponent<GenerateHostSide>() == null)
-            Instantiate(tilePrefab, tilePos, Quaternion.identity, _parentObject);
+        {
+            var generatedTile = Instantiate(tilePrefab, tilePos, Quaternion.identity, _parentObject);
+            var propertyLoader = generatedTile.GetComponent<TileWithProperties>();
+            if (propertyLoader != null)
+            {
+
+                if (string.IsNullOrEmpty(tile.Properties))
+                    propertyLoader.SetDefaultProperties();
+                else
+                    propertyLoader.LoadProperties(tile.Properties);
+            }
+        }
         // TODO: Implement this (need to figure out how to find full prefab path name for PUN.
         //else if (PhotonNetwork.IsMasterClient)
         //    PhotonNetwork.Instantiate(_tilePrefabLookup.GetPrefabPath(), tilePos, Quaternion.identity);

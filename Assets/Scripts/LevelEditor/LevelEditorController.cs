@@ -9,7 +9,6 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class LevelEditorController : MonoBehaviour
 {
@@ -21,8 +20,6 @@ public class LevelEditorController : MonoBehaviour
     private TMP_Text _currentBlockDisplayText;
     [SerializeField]
     private TilePrefabLookup _lookup;
-    [SerializeField]
-    private TMP_InputField _levelNameInput;
     [SerializeField]
     private GameObject _mainEditorCanvas;
     [SerializeField]
@@ -37,12 +34,21 @@ public class LevelEditorController : MonoBehaviour
     private float _cameraMaxDistanceFromCursor = 8.0f;
     [SerializeField]
     private float _cameraMoveSpeed = 0.5f;
+    [SerializeField]
+    private GameObject _tilePropertiesUi;
+    [SerializeField]
+    private GameObject _tilePropertiesCustomContainer;
+    [SerializeField]
+    private PropertyUiLookup _propertyUiLookup;
+
 
     private const float HorizontalMouseSensitivity = 1.0f;
     private const float VerticalMouseSensitivity = 1.0f;
     private float _verticalLookRotation;
 
     private InputAction _rotateCamera;
+    private InputAction _mouseRotateCameraClick;
+    private InputAction _mouseRotateCameraDrag;
     private InputAction _moveXZ;
     private InputAction _moveUp;
     private InputAction _moveDown;
@@ -51,8 +57,10 @@ public class LevelEditorController : MonoBehaviour
     private InputAction _placeTile;
     private InputAction _saveLevel;
     private InputAction _minimizeUi;
+    private InputAction _propertiesMenu;
 
     private bool _disableInputs;
+    private bool _propertyMenuOpened;
     private bool _movingHorizontally;
     private bool _movingVertically;
 
@@ -67,6 +75,9 @@ public class LevelEditorController : MonoBehaviour
 
     private Vector2 _rotateCameraInput;
     private bool _rotatingCamera;
+    private bool _holdingRotateMouseButton;
+
+    private TilePropertyParser _currentPropertyParser;
 
     void Awake()
     {
@@ -84,6 +95,9 @@ public class LevelEditorController : MonoBehaviour
         _saveLevel = _editorControls.Editor.SaveMenu;
         _minimizeUi = _editorControls.Editor.HelpMenu;
         _rotateCamera = _editorControls.Editor.RotateCamera;
+        _mouseRotateCameraClick = _editorControls.Editor.MouseRotateCameraClick;
+        _mouseRotateCameraDrag = _editorControls.Editor.MouseRotateCameraDrag;
+        _propertiesMenu = _editorControls.Editor.PropertiesMenu;
 
         _moveXZ.Enable();
         _moveUp.Enable();
@@ -94,6 +108,9 @@ public class LevelEditorController : MonoBehaviour
         _saveLevel.Enable();
         _minimizeUi.Enable();
         _rotateCamera.Enable();
+        _mouseRotateCameraClick.Enable();
+        _mouseRotateCameraDrag.Enable();
+        _propertiesMenu.Enable();
 
         _moveXZ.performed += OnMoveCursor;
         _moveXZ.canceled += OnStopMovingCursor;
@@ -106,6 +123,11 @@ public class LevelEditorController : MonoBehaviour
         _minimizeUi.performed += OnMinimize;
         _rotateCamera.performed += OnRotateCamera;
         _rotateCamera.canceled += OnRotateCameraEnd;
+        _mouseRotateCameraClick.performed += OnMouseCameraClickStart;
+        _mouseRotateCameraClick.canceled += OnMouseCameraClickEnd;
+        _mouseRotateCameraDrag.performed += OnRotateCameraMouse;
+        _mouseRotateCameraDrag.canceled += OnRotateCameraEnd;
+        _propertiesMenu.performed += OnPropertiesMenu;
     }
 
     void OnDisable()
@@ -119,15 +141,50 @@ public class LevelEditorController : MonoBehaviour
         _saveLevel.Disable();
         _minimizeUi.Disable();
         _rotateCamera.Disable();
+        _mouseRotateCameraClick.Disable();
+        _mouseRotateCameraDrag.Disable();
+        _propertiesMenu.Disable();
     }
 
     private void Start()
     {
-        // TODO: Allow loading an existing level in for init state.
         _generatedTiles = new List<LevelEditorTile>();
         _levelData = new LevelData();
+        LoadSelectedMap();
         UpdateBlockTypeDisplay();
         UpdateCursor();
+    }
+
+    private void LoadSelectedMap()
+    {
+        if (RoomManager.Instance == null) return;
+
+        var selectedMap = RoomManager.GetMap();
+        if (string.IsNullOrEmpty(selectedMap) || !File.Exists(selectedMap)) return;
+
+        LevelData loadedLevelData;
+        try
+        {
+            var levelDataJson = File.ReadAllText(selectedMap);
+            loadedLevelData = JsonConvert.DeserializeObject<LevelData>(levelDataJson);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to load level '{selectedMap}', got exception: {e}");
+            return;
+        }
+
+        _levelData = loadedLevelData;
+        GenerateTilesFromLevelData(loadedLevelData);
+    }
+
+    private void GenerateTilesFromLevelData(LevelData levelData)
+    {
+        for (var i = 0; i < levelData.Tiles.Count; i++)
+        {
+            var tile = levelData.Tiles[i];
+            AddTileOnScreen(tile);
+        }
     }
 
     private void Update()
@@ -137,8 +194,20 @@ public class LevelEditorController : MonoBehaviour
         FollowCursorWithCamera();
     }
 
+    public LevelData GetLevelData()
+    {
+        return _levelData;
+    }
+
+    public void EnableInputs()
+    {
+        _disableInputs = false;
+    }
+
     private void HandleRotateCamera()
     {
+        if (_disableInputs) return;
+
         _cameraContainer.transform.Rotate(Vector3.up * _rotateCameraInput.x * HorizontalMouseSensitivity);
         _verticalLookRotation += _rotateCameraInput.y * VerticalMouseSensitivity;
         _verticalLookRotation = Mathf.Clamp(_verticalLookRotation, -90f, 90f);
@@ -154,6 +223,21 @@ public class LevelEditorController : MonoBehaviour
         _cameraContainer.transform.position = Vector3.MoveTowards(_cameraContainer.transform.position, _cursor.position, _cameraMoveSpeed);
     }
 
+    private void OnMouseCameraClickStart(InputAction.CallbackContext context)
+    {
+        _holdingRotateMouseButton = true;
+    }
+
+    private void OnMouseCameraClickEnd(InputAction.CallbackContext context)
+    {
+        _holdingRotateMouseButton = false;
+    }
+
+    private void OnRotateCameraMouse(InputAction.CallbackContext context)
+    {
+        if(_holdingRotateMouseButton) OnRotateCamera(context);
+    }
+
     private void OnRotateCamera(InputAction.CallbackContext context)
     {
         _rotateCameraInput = context.ReadValue<Vector2>();
@@ -163,6 +247,56 @@ public class LevelEditorController : MonoBehaviour
     private void OnRotateCameraEnd(InputAction.CallbackContext context)
     {
         _rotatingCamera = false;
+    }
+
+    private void OnPropertiesMenu(InputAction.CallbackContext context)
+    {
+        if (_disableInputs)
+        {
+            if (_propertyMenuOpened)
+                OnClosePropertyMenu();
+            return;
+        }
+
+        Debug.Log($"ValueType = {context.valueType}");
+        var currentTile = GetCurrentTile();
+        if (currentTile == null)
+            return;
+        var customPropertiesPrefab = _propertyUiLookup.GetPropertyUiPrefab(currentTile.Type);
+        if (customPropertiesPrefab == null) return;
+
+        _disableInputs = true;
+        _propertyMenuOpened = true;
+        BuildPropertyUi(customPropertiesPrefab, currentTile);
+        _tilePropertiesUi.SetActive(true);
+    }
+
+    public void OnClosePropertyMenu()
+    {
+        // TODO: Maybe add some validation message here?
+        if (!_currentPropertyParser.IsValid()) return;
+        var currentTile = GetCurrentTile();
+        currentTile.Properties = _currentPropertyParser.SerializeProperties();
+        _tilePropertiesUi.SetActive(false);
+        _disableInputs = false;
+        _propertyMenuOpened = false;
+    }
+
+    private void BuildPropertyUi(GameObject customPropertiesPrefab, TileData currentTile)
+    {
+        for(var i = 0; i < _tilePropertiesCustomContainer.transform.childCount; i++)
+            Destroy(_tilePropertiesCustomContainer.transform.GetChild(i).gameObject);
+        var generatedUi = Instantiate(customPropertiesPrefab, _tilePropertiesCustomContainer.transform);
+        _currentPropertyParser = generatedUi.GetComponent<TilePropertyParser>();
+        if (_currentPropertyParser == null)
+        {
+            Debug.LogError("Error! Current tile's property UI prefab is missing TilePropertyParser in parent node!");
+            OnClosePropertyMenu();
+        }
+        else
+        {
+            _currentPropertyParser.Initialize(currentTile.Properties);
+        }
     }
 
     private void MoveCursorForwards()
@@ -235,32 +369,41 @@ public class LevelEditorController : MonoBehaviour
 
     private void EraseCurrentTile()
     {
-        var tilesRemoved = _levelData.Tiles.RemoveAll(d => d.X == _currentX && d.Y == _currentY && d.Z == _currentZ);
-        if (tilesRemoved == 0)
+        var tileToRemove = GetCurrentTile();
+        if (tileToRemove == null)
             return;
+        _levelData.Tiles.Remove(tileToRemove);
 
         RemoveCurrentTile();
     }
 
     private void AddCurrentTile()
     {
-        var currentTile = _levelData.Tiles.FirstOrDefault(d => d.X == _currentX && d.Y == _currentY && d.Z == _currentZ);
+        var currentTile = GetCurrentTile();
         if (currentTile == null)
-            _levelData.Tiles.Add(new TileData { Type = _currentBlockType, X = _currentX, Y = _currentY, Z = _currentZ });
+        {
+            currentTile = new TileData {Type = _currentBlockType, X = _currentX, Y = _currentY, Z = _currentZ};
+            _levelData.Tiles.Add(currentTile);
+        }
         else
         {
             currentTile.Type = _currentBlockType;
             RemoveCurrentTile();
         }
 
-        var currentPos = new Vector3(_currentX, _currentY, _currentZ);
-        var newObj = Instantiate(_lookup.GetPrefab(_currentBlockType), currentPos, Quaternion.identity).GameObject();
+        AddTileOnScreen(currentTile);
+    }
+
+    private void AddTileOnScreen(TileData tile)
+    {
+        var currentPos = new Vector3(tile.X, tile.Y, tile.Z);
+        var newObj = Instantiate(_lookup.GetPrefab(tile.Type), currentPos, Quaternion.identity).GameObject();
         _generatedTiles.Add(new LevelEditorTile
         {
             GeneratedObject = newObj,
-            X = _currentX,
-            Y = _currentY,
-            Z = _currentZ
+            X = tile.X,
+            Y = tile.Y,
+            Z = tile.Z
         });
     }
 
@@ -271,6 +414,11 @@ public class LevelEditorController : MonoBehaviour
             return;
         Destroy(tile.GeneratedObject);
         _generatedTiles.Remove(tile);
+    }
+
+    private TileData GetCurrentTile()
+    {
+        return _levelData.Tiles.FirstOrDefault(d => d.X == _currentX && d.Y == _currentY && d.Z == _currentZ);
     }
     
     private void CycleBlockBackwards()
@@ -299,30 +447,6 @@ public class LevelEditorController : MonoBehaviour
     private void UpdateBlockTypeDisplay()
     {
         _currentBlockDisplayText.text = $"Current Tile: {_currentBlockType}";
-    }
-
-    private void SaveLevel()
-    {
-        // TODO: Do something better than debug.log!!!
-        if (string.IsNullOrEmpty(_levelNameInput.text))
-        {
-            Debug.LogError("CANNOT SAVE FILE, NO LEVEL NAME GIVEN!");
-            return;
-        }
-
-        var dir = Path.Combine(Application.persistentDataPath, "CustomLevels");
-        if (!Directory.Exists(dir))
-            Directory.CreateDirectory(dir);
-        var filePath = Path.Combine(dir, $"{_levelNameInput.text}.level");
-
-        // TODO: Do something better than debug.log!!!
-        if (File.Exists(filePath))
-            Debug.LogError($"CANNOT SAVE LEVEL '{_levelNameInput.text}', LEVEL ALREADY EXISTS!");
-        else
-        {
-            var levelDataJson = JsonConvert.SerializeObject(_levelData, Formatting.None);
-            File.WriteAllText(filePath, levelDataJson);
-        }
     }
 
     // TODO: Make this work for joystick better (handle in update loop)!
@@ -385,9 +509,7 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnSaveLevel(InputAction.CallbackContext context)
     {
-        if (_disableInputs)
-            return;
-        SaveLevel();
+        if (!_disableInputs) _disableInputs = true;
     }
 
     private void OnMinimize(InputAction.CallbackContext context)
@@ -395,16 +517,6 @@ public class LevelEditorController : MonoBehaviour
         if (_disableInputs)
             return;
         ToggleMinimize();
-    }
-
-    public void OnSaveFilenameInputFocus(string contents)
-    {
-        _disableInputs = true;
-    }
-
-    public void OnSaveFilenameInputUnfocus(string contents)
-    {
-        _disableInputs = false;
     }
 
     public void OnExitLevelEditor()

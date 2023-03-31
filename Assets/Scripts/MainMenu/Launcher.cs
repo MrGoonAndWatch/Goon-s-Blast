@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Assets.Scripts.Constants;
 using Photon.Pun;
 using Photon.Realtime;
@@ -21,6 +23,10 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private GameObject _playerListItemPrefab;
         [SerializeField] private TMP_InputField _usernameInput;
         [SerializeField] private GameObject _startGameButton;
+        [SerializeField] private Transform _mapList;
+        [SerializeField] private Transform _mapEditList;
+        [SerializeField] private GameObject _mapSelectPrefab;
+        [SerializeField] private TMP_Text _selectedMapLabel;
 
         private void Awake()
         {
@@ -31,6 +37,7 @@ namespace Assets.Scripts.MainMenu
             }
 
             Instance = this;
+            RefreshSelectedMap("(select a map)");
 
             // TODO: Save username and load in from file here first.
             OnChangeUsername();
@@ -42,6 +49,7 @@ namespace Assets.Scripts.MainMenu
             Debug.Log("Starting Launcher");
             // Connects to Photon master server using /Photon/PhotonUnityNetworking/Resources/PhotonServerSettings
             PhotonNetwork.ConnectUsingSettings();
+            StartCoroutine(StartRefreshLevelList());
         }
 
         public override void OnConnectedToMaster()
@@ -63,6 +71,12 @@ namespace Assets.Scripts.MainMenu
             if (string.IsNullOrEmpty(_roomNameInputField?.text))
             {
                 Debug.Log("Room name was null/empty! Not creating room!");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(RoomManager.GetMap()))
+            {
+                Debug.Log("No map selected! Not creating room!");
                 return;
             }
             MenuManager.Instance.OpenMenu(MenuType.Loading);
@@ -144,6 +158,49 @@ namespace Assets.Scripts.MainMenu
             }
         }
 
+        private IEnumerator StartRefreshLevelList()
+        {
+            RefreshLevelList();
+            yield return null;
+        }
+
+        public static void RefreshSelectedMap(string displayText)
+        {
+            if (Instance == null)
+            {
+                Debug.LogError("Cannot refresh selected map, Launcher instance is null.");
+                return;
+            }
+
+            Instance._selectedMapLabel.text = displayText;
+        }
+
+        private void RefreshLevelList()
+        {
+            // TODO: Add folder support somehow... At a min need official files vs custom levels.
+            var customLevelDir = Path.Join(Application.persistentDataPath, "CustomLevels");
+            if (!Directory.Exists(customLevelDir))
+            {
+                Debug.LogError($"Couldn't load levels... Directory '{customLevelDir}' does not exist.");
+                return;
+            }
+
+            for (var i = _mapList.childCount - 1; i >= 0; i--)
+                Destroy(_mapList.GetChild(i).gameObject);
+            for (var i = _mapEditList.childCount - 1; i >= 0; i--)
+                Destroy(_mapEditList.GetChild(i).gameObject);
+
+            var customLevels = Directory.GetFiles(customLevelDir);
+            for (var i = 0; i < customLevels.Length; i++)
+            {
+                var displayName = Path.GetFileName(customLevels[i]);
+                var mapSelectItem = Instantiate(_mapSelectPrefab, _mapList).GetComponent<MapSelectItem>();
+                mapSelectItem.SetUp(customLevels[i], displayName, false);
+                var editMapSelectItem = Instantiate(_mapSelectPrefab, _mapEditList).GetComponent<MapSelectItem>();
+                editMapSelectItem.SetUp(customLevels[i], displayName, true);
+            }
+        }
+
         public void JoinRoom(RoomInfo roomInfo)
         {
             PhotonNetwork.JoinRoom(roomInfo.Name);
@@ -164,6 +221,12 @@ namespace Assets.Scripts.MainMenu
         }
 
         public void OnLevelEditorClick()
+        {
+            RoomManager.ClearMap();
+            PhotonNetwork.Disconnect();
+        }
+
+        public static void OpenEditor()
         {
             PhotonNetwork.Disconnect();
         }

@@ -15,7 +15,7 @@ public class PowerupSpawner : MonoBehaviour
 
     private static string GetContentsPrefabPath(Destructable destructable)
     {
-        switch (destructable.Contains)
+        switch (destructable.GetContents())
         {
             case GameConstants.DestructableContents.Random:
                 var selectedPowerupIndex = Random.Range(0, GameConstants.SpawnablePrefabs.Powerups.Length);
@@ -23,16 +23,16 @@ public class PowerupSpawner : MonoBehaviour
             case GameConstants.DestructableContents.Nothing:
                 return null;
             default:
-                var index = (int)destructable.Contains - 2;
+                var index = (int)destructable.GetContents() - 2;
                 return GameConstants.SpawnablePrefabs.Powerups[index];
         }
     }
 
     private static bool CheckChanceToSpawn(Destructable destructable)
     {
-        if (destructable.SpawnPowerupChance <= 0.0f)
+        if (destructable.GetSpawnChance() <= 0.0f)
             return false;
         var randomNum = Random.Range(0.0f, 1.0f);
-        return randomNum <= destructable.SpawnPowerupChance;
+        return randomNum <= destructable.GetSpawnChance();
     }
 }

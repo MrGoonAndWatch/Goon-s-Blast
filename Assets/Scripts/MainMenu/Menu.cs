@@ -29,5 +29,8 @@ namespace Assets.Scripts.MainMenu
         Error = 5,
         FindRoom = 6,
         StartRoom = 7,
+        MapSelect = 8,
+        Editor = 9,
+        EditorMapSelect = 10,
     }
 }
