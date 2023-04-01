@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using Assets.Scripts.Constants;
 using Newtonsoft.Json;
 using Photon.Pun;
@@ -32,10 +34,13 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         if (_photonView.IsMine)
         {
             LoadLevel();
-            CreateController();
+
+            if (PhotonNetwork.IsMasterClient)
+            {
+                SetupPlayerSpawns();
+                InitializeOnePerGameItems();
+            }
         }
-        if (PhotonNetwork.IsMasterClient)
-            InitializeOnePerGameItems();
     }
 
     private void Update()
@@ -126,22 +131,39 @@ public class PlayerManager : MonoBehaviourPunCallbacks
             GameOverCanvas.gameObject.SetActive(true);
     }
 
-    private void CreateController()
+    private void SetupPlayerSpawns()
     {
-        Debug.Log("Instantiated Player");
-        var spawnPoint = GetSpawnPoint();
+        var allPlayers = PhotonNetwork.PlayerList;
+        foreach (var player in allPlayers)
+        {
+            var spawnPoint = GetSpawnPoint();
+            _photonView.RPC(nameof(CreateController), player, spawnPoint);
+        }
+    }
+
+    [PunRPC]
+    private void CreateController(Vector3 spawnPoint)
+    {
         PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.PlayerController, spawnPoint, Quaternion.identity);
+        Debug.Log("Instantiated Player");
     }
 
     private static Vector3 GetSpawnPoint()
     {
         var spawnPoints = FindObjectsOfType<PlayerSpawn>();
+        var leastUsedSpawnPoints = spawnPoints.Min(p => p.TimesUsedInMatch);
+        spawnPoints = spawnPoints.Where(p => p.TimesUsedInMatch == leastUsedSpawnPoints).ToArray();
         Vector3 spawnPoint;
         if (spawnPoints.Length == 0)
             spawnPoint = Vector3.zero;
-        // TODO: More robust spawn point selection, try not to pick the same one for multiple players unless can't find a free one.
         else
-            spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        {
+            var spawnPointObj = spawnPoints[Random.Range(0, spawnPoints.Length)];
+            spawnPointObj.TimesUsedInMatch++;
+            spawnPoint = spawnPointObj.transform.position;
+            Debug.Log($"{DateTime.Now.Ticks} Picked spawn point {spawnPoint}.");
+        }
+
         return spawnPoint;
     }
 
