@@ -208,10 +208,14 @@ public class LevelEditorController : MonoBehaviour
     {
         if (_disableInputs) return;
 
-        _cameraContainer.transform.Rotate(Vector3.up * _rotateCameraInput.x * HorizontalMouseSensitivity);
+        var config = RoomManager.GetConfigSettings();
+        var invertXAxis = config?.InvertXAxisLook ?? false ? -1.0f : 1.0f;
+        var invertYAxis = config?.InvertYAxisLook ?? false ? -1.0f : 1.0f;
+
+        _cameraContainer.transform.Rotate(Vector3.up * _rotateCameraInput.x * HorizontalMouseSensitivity * invertXAxis);
         _verticalLookRotation += _rotateCameraInput.y * VerticalMouseSensitivity;
         _verticalLookRotation = Mathf.Clamp(_verticalLookRotation, -90f, 90f);
-        _camera.transform.localEulerAngles = Vector3.left * _verticalLookRotation;
+        _camera.transform.localEulerAngles = Vector3.left * _verticalLookRotation * invertYAxis;
     }
 
     private void FollowCursorWithCamera()
@@ -456,13 +460,15 @@ public class LevelEditorController : MonoBehaviour
             return;
 
         var moveDir = context.ReadValue<Vector2>();
-        if (moveDir.x > 0 && !_movingHorizontally)
+
+        // TODO: Would be nice to use proper deadzone processors but they don't seem to work (everything comes through).
+        if (moveDir.x >= 0.75 && !_movingHorizontally)
             MoveCursorRight();
-        else if (moveDir.x < 0 && !_movingHorizontally)
+        else if (moveDir.x <= -0.75 && !_movingHorizontally)
             MoveCursorLeft();
-        if (moveDir.y > 0 && !_movingVertically)
+        if (moveDir.y >= 0.75 && !_movingVertically)
             MoveCursorForwards();
-        else if (moveDir.y < 0 && !_movingVertically)
+        else if (moveDir.y <= -0.75 && !_movingVertically)
             MoveCursorBackwards();
     }
 

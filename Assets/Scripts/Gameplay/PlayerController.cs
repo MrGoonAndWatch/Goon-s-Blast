@@ -211,11 +211,15 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMoveCamera()
     {
+        var config = RoomManager.GetConfigSettings();
+        var invertXAxis = config?.InvertXAxisLook ?? false ? -1.0f : 1.0f;
+        var invertYAxis = config?.InvertYAxisLook ?? false ? -1.0f : 1.0f;
+
         // TODO: Revisit whether we want the player to rotate with the camera.
-        transform.Rotate(Vector3.up * _moveCameraInput.x * _horizontalMouseSensitivity);
+        transform.Rotate(Vector3.up * _moveCameraInput.x * _horizontalMouseSensitivity * invertXAxis);
         _verticalLookRotation += _moveCameraInput.y * _verticalMouseSensitivity;
         _verticalLookRotation = Mathf.Clamp(_verticalLookRotation, -90f, 90f);
-        _cameraContainer.transform.localEulerAngles = Vector3.left * _verticalLookRotation;
+        _cameraContainer.transform.localEulerAngles = Vector3.left * _verticalLookRotation * invertYAxis;
     }
 
     private void HandleMovePlayer()

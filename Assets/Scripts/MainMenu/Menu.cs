@@ -32,5 +32,7 @@ namespace Assets.Scripts.MainMenu
         MapSelect = 8,
         Editor = 9,
         EditorMapSelect = 10,
+        SettingsMenu = 11,
+        ControlsMenu = 12,
     }
 }

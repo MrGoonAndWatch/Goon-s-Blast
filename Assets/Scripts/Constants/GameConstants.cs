@@ -64,6 +64,15 @@ namespace Assets.Scripts.Constants
             public List<string> VsLevels { get; set; }
         }
 
+        public class ConfigSettings
+        {
+            public string Username { get; set; }
+            public bool InvertXAxisLook { get; set; }
+            public bool InvertYAxisLook { get; set; }
+        }
+
+        public const string ConfigSettingsFilename = "goonsblast.settings";
+
         public static class LevelFilePaths
         {
             public const string CustomLevelFolder = "CustomLevels";

@@ -9,6 +9,7 @@ using Photon.Realtime;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.MainMenu
 {
@@ -29,6 +30,8 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private Transform _mapEditList;
         [SerializeField] private GameObject _mapSelectPrefab;
         [SerializeField] private TMP_Text _selectedMapLabel;
+        [SerializeField] private Toggle _invertXAxisCheckbox;
+        [SerializeField] private Toggle _invertYAxisCheckbox;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -44,18 +47,28 @@ namespace Assets.Scripts.MainMenu
 
             Instance = this;
             RefreshSelectedMap("(select a map)");
-
-            // TODO: Save username and load in from file here first.
-            OnChangeUsername();
         }
 
         private void Start()
         {
+            LoadConfigSettings();
             MenuManager.Instance.OpenMenu(MenuType.Loading);
             Debug.Log("Starting Launcher");
             // Connects to Photon master server using /Photon/PhotonUnityNetworking/Resources/PhotonServerSettings
             PhotonNetwork.ConnectUsingSettings();
             StartCoroutine(StartRefreshLevelList());
+        }
+
+        private void LoadConfigSettings()
+        {
+            var configSettings = RoomManager.GetConfigSettings();
+            if (configSettings == null)
+                return;
+
+            PhotonNetwork.NickName = configSettings.Username;
+            _usernameInput.text = configSettings.Username;
+            _invertXAxisCheckbox.isOn = configSettings.InvertXAxisLook;
+            _invertYAxisCheckbox.isOn = configSettings.InvertYAxisLook;
         }
 
         public override void OnConnectedToMaster()
@@ -257,11 +270,24 @@ namespace Assets.Scripts.MainMenu
             item.SetUp(newPlayer);
         }
 
-        public void OnChangeUsername()
+        public void OnCancelConfigSettings()
         {
-            if (string.IsNullOrEmpty(_usernameInput.text))
-                return;
+            LoadConfigSettings();
+            MenuManager.Instance.OpenMenu(MenuType.Title);
+        }
+
+        public void OnSaveConfigSettings()
+        {
+            var newSettings = new GameConstants.ConfigSettings
+            {
+                Username = _usernameInput.text,
+                InvertXAxisLook = _invertXAxisCheckbox.isOn,
+                InvertYAxisLook = _invertYAxisCheckbox.isOn
+            };
+            RoomManager.SaveSettings(newSettings);
             PhotonNetwork.NickName = _usernameInput.text;
+
+            MenuManager.Instance.OpenMenu(MenuType.Title);
         }
 
         public void OnLevelEditorClick()
