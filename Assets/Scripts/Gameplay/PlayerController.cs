@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private GameObject _playerModel;
 
+    private const float DeathPlane = -30.0f;
+
     private float _verticalLookRotation;
     private bool _grounded;
     private Vector3 _smoothMoveVelocity;
@@ -203,6 +205,12 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!_matchEnded)
+            CheckForDeathPlane();
+
+        if (!_photonView.IsMine)
+            return;
+
         if (_movingCamera)
             HandleMoveCamera();
         if (_movingPlayer)
@@ -301,10 +309,24 @@ public class PlayerController : MonoBehaviour
         {
             // TODO: Handle having more than 1 hp (via item or stats or whatever).
             // TODO: Cooldown on how rapidly the player can get hit.
-            _playerModel.SetActive(false);
-            _dead = true;
-            Debug.Log($"Player {GetName()} was killed by an explosion!");
+            // TODO: Get owning player's explosion!
+            Die("an explosion");
         }
+    }
+
+    private void CheckForDeathPlane()
+    {
+        if (_playerModel.transform.position.y < DeathPlane)
+        {
+            Die("falling");
+        }
+    }
+
+    private void Die(string causeOfDeath)
+    {
+        _playerModel.SetActive(false);
+        _dead = true;
+        Debug.Log($"Player {GetName()} was killed by {causeOfDeath}!");
     }
     
     private void HandlePowerupCollision(Collider c)

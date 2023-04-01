@@ -1,1 +1,1 @@
-{"CampaignLevels":[],"VsLevels":["TotallyLegitLevel"]}
+{"CampaignLevels":[],"VsLevels":["Dig","Duel","Holes","TotallyLegitLevel"]}
