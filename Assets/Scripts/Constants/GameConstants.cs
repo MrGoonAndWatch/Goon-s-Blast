@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 
 namespace Assets.Scripts.Constants
 {
@@ -38,6 +37,12 @@ namespace Assets.Scripts.Constants
             SuccessWindow = 3
         }
 
+        public enum GameMatchType
+        {
+            Survival = 0,
+            KillCount = 1,
+        }
+
         public static class SpawnablePrefabs
         {
             public const string PlayerManager = "PlayerManager";
@@ -69,6 +74,13 @@ namespace Assets.Scripts.Constants
             public string Username { get; set; }
             public bool InvertXAxisLook { get; set; }
             public bool InvertYAxisLook { get; set; }
+        }
+
+        public class MatchSettings
+        {
+            public GameMatchType MatchType { get; set; }
+            public int TimerSeconds { get; set; }
+            public int KillsToWin { get; set; }
         }
 
         public const string ConfigSettingsFilename = "goonsblast.settings";

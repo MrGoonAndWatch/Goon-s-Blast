@@ -42,7 +42,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             LoadLevel();
-            _photonView.RPC(nameof(SetupMatchRules), RpcTarget.All);
+            var matchSettingsJson = JsonConvert.SerializeObject(RoomManager.GetMatchSettings(), Formatting.None);
+            _photonView.RPC(nameof(SetupMatchRules), RpcTarget.All, matchSettingsJson);
             SetupPlayerSpawns();
             InitializeOnePerGameItems();
         }
@@ -57,11 +58,17 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    private void SetupMatchRules()
+    private void SetupMatchRules(string matchSettingsJson)
     {
-        // TODO: Retrieve match settings from somewhere (host will need to provide them to other clients) instead of hard coding this!
+        var matchSettings = JsonConvert.DeserializeObject<GameConstants.MatchSettings>(matchSettingsJson);
+        if (matchSettings == null)
+        {
+            Debug.LogError("Could not load match settings from provided json in RPC call!");
+            matchSettings = new GameConstants.MatchSettings();
+        }
+        // TODO: Use matchSettings.MatchType to determine which implementation to add here!
         var survivorRulesManager = gameObject.AddComponent<SurvivorMatchRulesManager>();
-        survivorRulesManager.Init(false);
+        survivorRulesManager.Init(matchSettings.TimerSeconds > 0, TimeSpan.FromSeconds(matchSettings.TimerSeconds));
         _matchRulesManager = survivorRulesManager;
     }
 

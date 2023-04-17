@@ -12,6 +12,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private string _selectedMapFilepath;
     private bool _officialMap;
     private GameConstants.ConfigSettings _configSettings;
+    private GameConstants.MatchSettings _matchSettings;
 
     private void Awake()
     {
@@ -22,6 +23,13 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
 
         LoadSettings();
+
+        _matchSettings = new GameConstants.MatchSettings
+        {
+            MatchType = GameConstants.GameMatchType.Survival,
+            TimerSeconds = 0,
+            KillsToWin = 0,
+        };
 
         DontDestroyOnLoad(gameObject);
         Instance = this;
@@ -69,6 +77,25 @@ public class RoomManager : MonoBehaviourPunCallbacks
         
         var configJson = JsonConvert.SerializeObject(newSettings, Formatting.None);
         File.WriteAllText(configSettingsFilepath, configJson);
+    }
+
+    public static GameConstants.MatchSettings GetMatchSettings()
+    {
+        if (Instance == null)
+        {
+            Debug.LogError("Cannot get config settings, no RoomManager instance found!");
+            return null;
+        }
+
+        return Instance._matchSettings;
+    }
+
+    public static void SaveMatchSettings(GameConstants.MatchSettings newSettings)
+    {
+        if (Instance == null)
+            Debug.LogError("Cannot update settings data, no RoomManager instance was found!");
+        else
+            Instance._matchSettings = newSettings;
     }
 
     public override void OnEnable()

@@ -34,5 +34,6 @@ namespace Assets.Scripts.MainMenu
         EditorMapSelect = 10,
         SettingsMenu = 11,
         ControlsMenu = 12,
+        MatchSettingsMenu = 13
     }
 }

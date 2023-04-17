@@ -32,6 +32,9 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private TMP_Text _selectedMapLabel;
         [SerializeField] private Toggle _invertXAxisCheckbox;
         [SerializeField] private Toggle _invertYAxisCheckbox;
+        [SerializeField] private TMP_Dropdown _matchTypePicker;
+        [SerializeField] private Slider _matchTimer;
+        [SerializeField] private Slider _killsToWin;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -294,6 +297,29 @@ namespace Assets.Scripts.MainMenu
         {
             RoomManager.ClearMap();
             PhotonNetwork.Disconnect();
+        }
+
+        public void OnMatchConfigSaved()
+        {
+            var newSettings = new GameConstants.MatchSettings
+            {
+                MatchType = (GameConstants.GameMatchType) _matchTypePicker.value,
+                TimerSeconds = (int) _matchTimer.value,
+                KillsToWin = (int) _killsToWin.value,
+            };
+            RoomManager.SaveMatchSettings(newSettings);
+
+            MenuManager.Instance.OpenMenu(MenuType.CreateRoom);
+        }
+
+        public void OnMatchConfigCancelled()
+        {
+            var oldMatchSettings = RoomManager.GetMatchSettings();
+            _matchTypePicker.value = (int) oldMatchSettings.MatchType;
+            _matchTimer.value = oldMatchSettings.TimerSeconds;
+            _killsToWin.value = oldMatchSettings.KillsToWin;
+
+            MenuManager.Instance.OpenMenu(MenuType.CreateRoom);
         }
 
         public static void OpenEditor()
