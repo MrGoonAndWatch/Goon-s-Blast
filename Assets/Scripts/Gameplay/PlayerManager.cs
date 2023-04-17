@@ -11,35 +11,40 @@ using Random = UnityEngine.Random;
 
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
-    private Canvas GameOverCanvas;
-    private TMP_Text WinningPlayerDisplay;
+    private MatchEndMenu _matchEndMenu;
+    private TMP_Text _winningPlayerDisplay;
 
     private PhotonView _photonView;
-    private PlayerController[] _playerInstances;
     private bool _refreshPlayerList = true;
+
+    private MatchRulesManager _matchRulesManager;
+
     private bool _matchEnded;
 
     private void Awake()
     {
         _photonView = GetComponent<PhotonView>();
-        _playerInstances = new PlayerController[0];
 
-        GameOverCanvas = FindObjectOfType<Canvas>();
-        WinningPlayerDisplay = FindObjectOfType<WinningPlayerTextbox>()?.gameObject.GetComponent<TMP_Text>();
-        if(GameOverCanvas != null) GameOverCanvas.gameObject.SetActive(false);
+        // Note: we need these 2 to be non-null for the instance of this script that belongs to the host
+        //          because they will be the one sending the RPC to end the match later,
+        //          once the menu gets set to inactive it'll be unreachable by FindObjectOfType
+        //          and these instances seem to finish their Awake and Start before other instances even get called.
+        _matchEndMenu = FindObjectOfType<MatchEndMenu>();
+        _winningPlayerDisplay = FindObjectOfType<GameResultTextbox>()?.gameObject.GetComponent<TMP_Text>();
+        if (_matchEndMenu != null && _photonView.Owner.IsMasterClient)
+            _matchEndMenu.gameObject.SetActive(false);
     }
 
     private void Start()
     {
-        if (_photonView.IsMine)
+        if (!_photonView.IsMine) return;
+
+        if (PhotonNetwork.IsMasterClient)
         {
             LoadLevel();
-
-            if (PhotonNetwork.IsMasterClient)
-            {
-                SetupPlayerSpawns();
-                InitializeOnePerGameItems();
-            }
+            _photonView.RPC(nameof(SetupMatchRules), RpcTarget.All);
+            SetupPlayerSpawns();
+            InitializeOnePerGameItems();
         }
     }
 
@@ -49,6 +54,15 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         if (_refreshPlayerList) RefreshPlayerList();
 
         CheckForEndOfMatch();
+    }
+
+    [PunRPC]
+    private void SetupMatchRules()
+    {
+        // TODO: Retrieve match settings from somewhere (host will need to provide them to other clients) instead of hard coding this!
+        var survivorRulesManager = gameObject.AddComponent<SurvivorMatchRulesManager>();
+        survivorRulesManager.Init(false);
+        _matchRulesManager = survivorRulesManager;
     }
 
     private void LoadLevel()
@@ -86,49 +100,45 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     
     private void RefreshPlayerList()
     {
+        if (!PhotonNetwork.IsMasterClient) return;
+
         var numPlayers = (int)PhotonNetwork.CurrentRoom.PlayerCount;
         var playersFound = FindObjectsOfType<PlayerController>();
         if (playersFound.Length != numPlayers) return;
-        _playerInstances = playersFound;
+        _matchRulesManager.UpdatePlayerList(playersFound);
         _refreshPlayerList = false;
     }
-
-    // TODO: Alternate method for co-op mode where ends on win condition or all players dead.
+    
     private void CheckForEndOfMatch()
     {
-        if (_refreshPlayerList || _matchEnded || _playerInstances.Length <= 1) return;
-
-        var playersRemaining = 0;
-        var lastAliveName = "";
-        for (var i = 0; i < _playerInstances.Length; i++)
+        if (_matchEnded || !PhotonNetwork.IsMasterClient) return;
+        
+        if(_matchRulesManager.HasMatchEnded())
         {
-            if (_playerInstances[i].IsAlive())
-            {
-                playersRemaining++;
-                lastAliveName = _playerInstances[i].GetName();
-            }
-        }
-
-        if (playersRemaining <= 1)
-        {
-            var winningMessage = string.IsNullOrEmpty(lastAliveName) ? "DRAW" : $"{lastAliveName} WINS!";
-            EndMatch(winningMessage);
+            _matchEnded = true;
+            var endingMessage = _matchRulesManager.ProcessMatchEnd();
+            _photonView.RPC(nameof(EndMatch), RpcTarget.All, endingMessage);
         }
     }
 
+    [PunRPC]
     private void EndMatch(string endingMessage)
     {
-        if (_matchEnded) return;
+        if (!PhotonNetwork.IsMasterClient)
+            FindObjectOfType<MatchRulesManager>().ProcessMatchEnd();
 
-        for (var i = 0; i < _playerInstances.Length; i++)
-        {
-            _playerInstances[i].EndMatch();
-        }
+        var allPlayers = FindObjectsOfType<PlayerController>();
+        for (var i = 0; i < allPlayers.Length; i++)
+            allPlayers[i].EndMatch();
         
-        if (WinningPlayerDisplay != null)
-            WinningPlayerDisplay.text = endingMessage;
-        if(GameOverCanvas != null)
-            GameOverCanvas.gameObject.SetActive(true);
+        if (_winningPlayerDisplay != null)
+            _winningPlayerDisplay.text = endingMessage;
+        else
+            Debug.LogWarning("WinningPlayerDisplay IS NULL!");
+        if(_matchEndMenu != null)
+            _matchEndMenu.gameObject.SetActive(true);
+        else
+            Debug.LogWarning("MatchEndMenu IS NULL!");
     }
 
     private void SetupPlayerSpawns()
@@ -145,7 +155,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     private void CreateController(Vector3 spawnPoint)
     {
         PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.PlayerController, spawnPoint, Quaternion.identity);
-        Debug.Log("Instantiated Player");
     }
 
     private static Vector3 GetSpawnPoint()

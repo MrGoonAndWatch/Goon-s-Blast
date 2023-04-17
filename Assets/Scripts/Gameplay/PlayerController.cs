@@ -316,6 +316,8 @@ public class PlayerController : MonoBehaviour
 
     private void CheckForDeathPlane()
     {
+        if (_dead) return;
+
         if (_playerModel.transform.position.y < DeathPlane)
         {
             Die("falling");
