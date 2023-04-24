@@ -43,12 +43,22 @@ namespace Assets.Scripts.Constants
             KillCount = 1,
         }
 
+        public enum SuddenDeathType
+        {
+            None = 0,
+            CannonBalls = 1,
+            BombRain = 2
+        }
+
         public static class SpawnablePrefabs
         {
             public const string PlayerManager = "PlayerManager";
             public const string PlayerController = "PlayerController";
             public const string PowerupSpawner = "Spawner-Powerups";
-            
+
+            public const string SuddenDeathManager = "SuddenDeath/SuddenDeathManager";
+            public const string CannonBall = "SuddenDeath/CannonBall";
+
             public const string BasicBomb = "Bombs/Bomb-Basic";
             public const string RemoteBomb = "Bombs/Bomb-Remote";
 
@@ -81,6 +91,8 @@ namespace Assets.Scripts.Constants
             public GameMatchType MatchType { get; set; }
             public int TimerSeconds { get; set; }
             public int KillsToWin { get; set; }
+            public SuddenDeathType SuddenDeathType { get; set; }
+            public int SuddenDeathStartsAt { get; set; }
         }
 
         public const string ConfigSettingsFilename = "goonsblast.settings";

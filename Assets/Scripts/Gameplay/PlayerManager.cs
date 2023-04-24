@@ -42,10 +42,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             LoadLevel();
-            var matchSettingsJson = JsonConvert.SerializeObject(RoomManager.GetMatchSettings(), Formatting.None);
+            var matchSettings = RoomManager.GetMatchSettings();
+            var matchSettingsJson = JsonConvert.SerializeObject(matchSettings, Formatting.None);
             _photonView.RPC(nameof(SetupMatchRules), RpcTarget.All, matchSettingsJson);
             SetupPlayerSpawns();
-            InitializeOnePerGameItems();
+            InitializeOnePerGameItems(matchSettings);
         }
     }
 
@@ -183,12 +184,15 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         return spawnPoint;
     }
 
-    private void InitializeOnePerGameItems()
+    private void InitializeOnePerGameItems(GameConstants.MatchSettings matchSettings)
     {
         var spawner = PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.PowerupSpawner, Vector3.zero, Quaternion.identity).GetComponent<PowerupSpawner>();
         var destructables = FindObjectsOfType<Destructable>();
         for (var i = 0; i < destructables.Length; i++)
             destructables[i].SetPowerupSpawner(spawner);
+
+        var suddenDeathManager = PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.SuddenDeathManager, Vector3.zero, Quaternion.identity).GetComponent<SuddenDeathManager>();
+        suddenDeathManager.Init(matchSettings);
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)

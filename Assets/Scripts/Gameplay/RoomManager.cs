@@ -29,6 +29,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
             MatchType = GameConstants.GameMatchType.Survival,
             TimerSeconds = 0,
             KillsToWin = 0,
+            SuddenDeathType = GameConstants.SuddenDeathType.None,
+            SuddenDeathStartsAt = 0
         };
 
         DontDestroyOnLoad(gameObject);

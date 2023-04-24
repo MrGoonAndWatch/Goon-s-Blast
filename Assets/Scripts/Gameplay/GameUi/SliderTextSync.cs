@@ -23,6 +23,11 @@ public class SliderTextSync : MonoBehaviour
         _numInputUi.onDeselect.AddListener(OnTextInputUnfocus);
     }
 
+    public void Refresh()
+    {
+        OnTextInputChange(_numInputUi.text);
+    }
+
     public void OnSliderChange(float newValue)
     {
         var textValue = GetTextValueFromSlider();

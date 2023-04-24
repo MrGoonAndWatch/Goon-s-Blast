@@ -35,6 +35,8 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private TMP_Dropdown _matchTypePicker;
         [SerializeField] private Slider _matchTimer;
         [SerializeField] private Slider _killsToWin;
+        [SerializeField] private TMP_Dropdown _suddenDeathPicker;
+        [SerializeField] private Slider _suddenDeathTimer;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -306,6 +308,8 @@ namespace Assets.Scripts.MainMenu
                 MatchType = (GameConstants.GameMatchType) _matchTypePicker.value,
                 TimerSeconds = (int) _matchTimer.value,
                 KillsToWin = (int) _killsToWin.value,
+                SuddenDeathType = (GameConstants.SuddenDeathType) _suddenDeathPicker.value,
+                SuddenDeathStartsAt = (int)_suddenDeathTimer.value
             };
             RoomManager.SaveMatchSettings(newSettings);
 
