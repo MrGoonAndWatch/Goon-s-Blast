@@ -1533,19 +1533,7 @@ MonoBehaviour:
       m_Calls: []
   m_OnDeselect:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6384901576821728213}
-        m_TargetAssemblyTypeName: DestructibleSpawnChanceUISync, Assembly-CSharp
-        m_MethodName: OnSpawnChanceInputUnfocus
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_OnTextSelection:
     m_PersistentCalls:
       m_Calls: []
@@ -1554,19 +1542,7 @@ MonoBehaviour:
       m_Calls: []
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6384901576821728213}
-        m_TargetAssemblyTypeName: DestructibleSpawnChanceUISync, Assembly-CSharp
-        m_MethodName: OnSpawnChanceInputChange
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_OnTouchScreenKeyboardStatusChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1810,19 +1786,7 @@ MonoBehaviour:
   m_Value: 0
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6384901576821728213}
-        m_TargetAssemblyTypeName: DestructibleSpawnChanceUISync, Assembly-CSharp
-        m_MethodName: OnSpawnChanceSliderChange
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &6384901576821728218
 GameObject:
   m_ObjectHideFlags: 0
@@ -1833,7 +1797,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6384901576821728219}
   - component: {fileID: 6384901576821728212}
-  - component: {fileID: 6384901576821728213}
+  - component: {fileID: 2171407621432531578}
   m_Layer: 5
   m_Name: Destructible Properties UI
   m_TagString: Untagged
@@ -1880,7 +1844,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _blockContentsPicker: {fileID: 6384901575980470256}
   _spawnProbabilitySlider: {fileID: 6384901576796969424}
---- !u!114 &6384901576821728213
+--- !u!114 &2171407621432531578
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1889,11 +1853,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 6384901576821728218}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9df8be667465f784fac84e1ba8eff472, type: 3}
+  m_Script: {fileID: 11500000, guid: a34811c5b7e1d9f42953ba4243c4b199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _spawnChanceSlider: {fileID: 6384901576796969424}
-  _spawnChanceInput: {fileID: 6384901576738876389}
+  _sliderUi: {fileID: 6384901576796969424}
+  _numInputUi: {fileID: 6384901576738876389}
+  _showAsPercentage: 1
 --- !u!1 &6384901576831834494
 GameObject:
   m_ObjectHideFlags: 0
