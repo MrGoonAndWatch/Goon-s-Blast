@@ -3,11 +3,10 @@ using UnityEngine;
 
 public class CannonBall : MonoBehaviour
 {
+    [SerializeField]
     private const float TimeToExist = 10;
-    private const float MoveSpeed = 0.5f;
 
     private float _timeLeft;
-    private Vector3 _moveDir;
 
     private void Start()
     {
@@ -17,7 +16,8 @@ public class CannonBall : MonoBehaviour
     public void Init(Vector3 direction)
     {
         Debug.Log($"init'd a cannonball ({direction})!");
-        _moveDir = direction;
+        var cannonBallBall = GetComponentInChildren<CannonBallBall>();
+        cannonBallBall.Init(direction);
     }
 
     private void Update()
@@ -28,10 +28,5 @@ public class CannonBall : MonoBehaviour
             Debug.Log("Destroyed a cannonball!");
             PhotonNetwork.Destroy(gameObject);
         }
-    }
-
-    private void FixedUpdate()
-    {
-        gameObject.transform.Translate(_moveDir * MoveSpeed);
     }
 }

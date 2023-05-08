@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Assets.Scripts.Constants;
 using Photon.Pun;
@@ -19,6 +20,8 @@ public class PlayerController : MonoBehaviour
     private bool _grounded;
     private Vector3 _smoothMoveVelocity;
     private Vector3 _moveAmount;
+    private bool _inRagdoll;
+    private TimeSpan _ragdollDuration;
 
     private Rigidbody _rigidbody;
     private PhotonView _photonView;
@@ -141,7 +144,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnMovePlayer(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead) return;
+        if (_matchEnded || _dead || _inRagdoll) return;
 
         _movePlayerInput = context.ReadValue<Vector2>();
         _movingPlayer = true;
@@ -154,13 +157,13 @@ public class PlayerController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || !_grounded) return;
+        if (_matchEnded || _dead || !_grounded || _inRagdoll) return;
         _rigidbody.AddForce(transform.up * _jumpForce);
     }
 
     private void OnLayBomb(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || _availableBombs <= 0) return;
+        if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll) return;
         // TODO: Start animation instead of immediately placing bomb.
         // TODO: use reference from player model's dir instead of this script's obj's forward!
         var spawnPos = transform.position + (_bombSpawnDistance * new Vector3(transform.forward.x, 0, transform.forward.z));
@@ -208,6 +211,13 @@ public class PlayerController : MonoBehaviour
         if (!_matchEnded)
             CheckForDeathPlane();
 
+        if (_inRagdoll)
+        {
+            _ragdollDuration -= TimeSpan.FromSeconds(Time.deltaTime);
+            if(_ragdollDuration.TotalMilliseconds <= 0)
+                EndRagdoll();
+        }
+
         if (!_photonView.IsMine)
             return;
 
@@ -251,9 +261,32 @@ public class PlayerController : MonoBehaviour
     
     private void FixedUpdate()
     {
-        if (!_photonView.IsMine || _matchEnded)
+        if (!_photonView.IsMine || _matchEnded || _inRagdoll)
             return;
         _rigidbody.MovePosition(_rigidbody.position + transform.TransformDirection(_moveAmount) * Time.fixedDeltaTime);
+        //transform.position += transform.TransformDirection(_moveAmount) * Time.fixedDeltaTime;
+    }
+
+    private void OnCollisionEnter(Collision c)
+    {
+
+    }
+
+    //private void OnCollisionEnter(Collision c)
+    //{
+    //    //var relativeVelocity = transform.InverseTransformDirection(c.relativeVelocity);
+    //    var contactPoint = c.GetContact(0);
+    //    var overlap = Vector3.Distance(contactPoint.point, contactPoint.otherCollider.ClosestPoint(contactPoint.point));
+    //
+    //    if (transform.position.z < c.transform.position.z)
+    //    {
+    //        transform.position -= new Vector3(0, 0, overlap);
+    //    }
+    //}
+
+    private void OnCollisionExit(Collision c)
+    {
+    
     }
 
     public void IncrementBombCount(Bomb explodedBomb)
@@ -289,6 +322,24 @@ public class PlayerController : MonoBehaviour
     public void SetRemoteBombs()
     {
         _remoteBombs = true;
+    }
+
+    public void StartRagdoll(TimeSpan duration, Vector3 incomingObjectVelocity)
+    {
+        _rigidbody.constraints = RigidbodyConstraints.None;
+        StopPlayerMovement();
+        _inRagdoll = true;
+        _ragdollDuration = duration;
+        _rigidbody.AddForce(incomingObjectVelocity);
+    }
+
+    public void EndRagdoll()
+    {
+        // TODO: Getting up animation?
+        // TODO: Adjust position here too.
+        transform.rotation = Quaternion.identity;
+        _inRagdoll = false;
+        _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
     private void OnTriggerEnter(Collider c)
