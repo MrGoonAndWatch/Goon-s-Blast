@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private GameObject _playerModel;
 
+    [SerializeField] private PlayerPickUpRadius _playerPickUpRadius;
+
     private const float DeathPlane = -30.0f;
 
     private float _verticalLookRotation;
@@ -46,11 +48,17 @@ public class PlayerController : MonoBehaviour
     private InputAction _openMenu;
     private InputAction _detonate;
     private InputAction _run;
+    private InputAction _pickUp;
     private bool _movingPlayer;
     private Vector2 _movePlayerInput;
     private bool _movingCamera;
     private Vector2 _moveCameraInput;
     private bool _isRunning;
+
+    private int _killCount;
+
+    private bool _isHoldingSomething;
+    private Bomb _heldItem;
 
     private void OnEnable()
     {
@@ -63,6 +71,7 @@ public class PlayerController : MonoBehaviour
         _openMenu = _playerControls.Default.OpenMenu;
         _detonate = _playerControls.Default.Detonate;
         _run = _playerControls.Default.Run;
+        _pickUp = _playerControls.Default.PickUp;
 
         _camera.Enable();
         _move.Enable();
@@ -71,6 +80,7 @@ public class PlayerController : MonoBehaviour
         _openMenu.Enable();
         _detonate.Enable();
         _run.Enable();
+        _pickUp.Enable();
 
         _camera.performed += OnMoveCamera;
         _camera.canceled += OnMoveCameraEnd;
@@ -82,6 +92,8 @@ public class PlayerController : MonoBehaviour
         _detonate.performed += OnDetonate;
         _run.performed += OnRun;
         _run.canceled += OnRunEnd;
+        _pickUp.performed += OnPickUp;
+        _pickUp.canceled += OnPickUpEnd;
     }
 
     private void OnDisable()
@@ -94,6 +106,7 @@ public class PlayerController : MonoBehaviour
         _openMenu.Disable();
         _detonate.Disable();
         _run.Disable();
+        _pickUp.Disable();
     }
 
     public bool IsAlive()
@@ -199,9 +212,36 @@ public class PlayerController : MonoBehaviour
         _isRunning = false;
     }
 
+    private void OnPickUp(InputAction.CallbackContext context)
+    {
+        if (_playerPickUpRadius.CanPickUpSomething())
+        {
+            Debug.Log("Picking something up!");
+            _isHoldingSomething = true;
+            _heldItem = _playerPickUpRadius.GetItemForPickup();
+            _heldItem.Pickup(this);
+        }
+    }
+
+    private void OnPickUpEnd(InputAction.CallbackContext context)
+    {
+        if (_isHoldingSomething)
+        {
+            if (_moveAmount.x != 0 || _moveAmount.z != 0 || _rigidbody.velocity.y != 0)
+            {
+                var velocity = transform.TransformDirection(_moveAmount);
+                velocity.y = _rigidbody.velocity.y;
+                _heldItem.Throw(velocity);
+            }
+            else
+                _heldItem.Drop();
+            _heldItem = null;
+            _isHoldingSomething = false;
+        }
+    }
+
     private static void OnQuitMatch(InputAction.CallbackContext context)
     {
-        Debug.Log("Quitting Room!");
         PhotonNetwork.LeaveRoom();
         PhotonNetwork.LoadLevel((int)GameConstants.LevelIndexes.MainMenu);
     }
@@ -346,22 +386,37 @@ public class PlayerController : MonoBehaviour
     {
         if (_dead) return;
 
-        // TODO: Can we have players track their status separately then sync somehow to everyone else?
-        // if (!_photonView.IsMine) return;
-
         HandleExplosionCollision(c);
         HandlePowerupCollision(c);
     }
 
     private void HandleExplosionCollision(Collider c)
     {
+        if (!PhotonNetwork.IsMasterClient) return;
+
         var explosion = c.GetComponent<Explosion>();
         if (explosion != null)
         {
             // TODO: Handle having more than 1 hp (via item or stats or whatever).
             // TODO: Cooldown on how rapidly the player can get hit.
-            // TODO: Get owning player's explosion!
-            Die("an explosion");
+            var playerWhoLaidBomb = explosion.GetPlayerWhoLaidBomb();
+            string causeOfDeath;
+            if (playerWhoLaidBomb == null)
+            {
+                Debug.Log("Nobody laid this bomb!");
+                causeOfDeath = "an explosion";
+            }
+            else if(playerWhoLaidBomb.GetPhotonViewId() == _photonView.ViewID)
+            {
+                causeOfDeath = $"{GetName()} blew themself up!";
+            }
+            else
+            {
+                playerWhoLaidBomb.AddKill();
+                causeOfDeath = $"{playerWhoLaidBomb.GetName()}'s explosion";
+            }
+            
+            _photonView.RPC(nameof(Die), RpcTarget.All, causeOfDeath);
         }
     }
 
@@ -370,11 +425,10 @@ public class PlayerController : MonoBehaviour
         if (_dead) return;
 
         if (_playerModel.transform.position.y < DeathPlane)
-        {
-            Die("falling");
-        }
+            _photonView.RPC(nameof(Die), RpcTarget.All, "falling");
     }
 
+    [PunRPC]
     private void Die(string causeOfDeath)
     {
         _playerModel.SetActive(false);
@@ -387,5 +441,27 @@ public class PlayerController : MonoBehaviour
         var powerup = c.GetComponent<Powerup>();
         if (powerup != null && !powerup.AlreadyPickedUp())
             powerup.PickUp(this);
+    }
+
+    public int GetPhotonViewId()
+    {
+        return _photonView.ViewID;
+    }
+
+    public void AddKill()
+    {
+        _photonView.RPC(nameof(IncrementKillCount), RpcTarget.MasterClient);
+    }
+
+    public int GetKillCount()
+    {
+        return _killCount;
+    }
+
+    [PunRPC]
+    public void IncrementKillCount()
+    {
+        _killCount++;
+        Debug.Log($"Incremented killcount for player {GetName()}. Killcount is now {_killCount}");
     }
 }

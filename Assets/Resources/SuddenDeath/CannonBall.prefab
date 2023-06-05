@@ -131,6 +131,7 @@ MonoBehaviour:
   _moveSpeed: 15
   _forceMultiplier: 1000
   _yForce: 10
+  _rigidbody: {fileID: 180888651317858402}
 --- !u!1 &180888651916510549
 GameObject:
   m_ObjectHideFlags: 0

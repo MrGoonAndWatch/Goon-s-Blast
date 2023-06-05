@@ -89,6 +89,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PickUp"",
+                    ""type"": ""Button"",
+                    ""id"": ""01850bfb-fe78-44bf-9b8a-95b76f4ab906"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -287,6 +296,28 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""KeyboardMouse"",
                     ""action"": ""Camera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""83502a58-b591-4ce4-af6a-42192b0732f5"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PickUp"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9b4f8e6c-ad60-4337-9a20-322ec65f5cf7"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PickUp"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -846,6 +877,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Default_OpenMenu = m_Default.FindAction("OpenMenu", throwIfNotFound: true);
         m_Default_Detonate = m_Default.FindAction("Detonate", throwIfNotFound: true);
         m_Default_Run = m_Default.FindAction("Run", throwIfNotFound: true);
+        m_Default_PickUp = m_Default.FindAction("PickUp", throwIfNotFound: true);
         // Editor
         m_Editor = asset.FindActionMap("Editor", throwIfNotFound: true);
         m_Editor_MoveXZ = m_Editor.FindAction("MoveXZ", throwIfNotFound: true);
@@ -931,6 +963,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_OpenMenu;
     private readonly InputAction m_Default_Detonate;
     private readonly InputAction m_Default_Run;
+    private readonly InputAction m_Default_PickUp;
     public struct DefaultActions
     {
         private @PlayerControls m_Wrapper;
@@ -942,6 +975,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @OpenMenu => m_Wrapper.m_Default_OpenMenu;
         public InputAction @Detonate => m_Wrapper.m_Default_Detonate;
         public InputAction @Run => m_Wrapper.m_Default_Run;
+        public InputAction @PickUp => m_Wrapper.m_Default_PickUp;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -972,6 +1006,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Run.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnRun;
                 @Run.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnRun;
                 @Run.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnRun;
+                @PickUp.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
+                @PickUp.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
+                @PickUp.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -997,6 +1034,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Run.started += instance.OnRun;
                 @Run.performed += instance.OnRun;
                 @Run.canceled += instance.OnRun;
+                @PickUp.started += instance.OnPickUp;
+                @PickUp.performed += instance.OnPickUp;
+                @PickUp.canceled += instance.OnPickUp;
             }
         }
     }
@@ -1198,6 +1238,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnOpenMenu(InputAction.CallbackContext context);
         void OnDetonate(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
+        void OnPickUp(InputAction.CallbackContext context);
     }
     public interface IEditorActions
     {

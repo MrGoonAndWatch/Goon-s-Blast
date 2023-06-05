@@ -12,15 +12,10 @@ public class CannonBallBall : MonoBehaviour
     private float _forceMultiplier = 1000.0f;
     [SerializeField]
     private float _yForce = 600.0f;
-
+    [SerializeField]
     private Rigidbody _rigidbody;
 
     private Vector3 _moveDir;
-
-    private void Start()
-    {
-        _rigidbody = GetComponent<Rigidbody>();
-    }
 
     public void Init(Vector3 moveDir)
     {
@@ -29,7 +24,6 @@ public class CannonBallBall : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //gameObject.transform.Translate(_moveDir * MoveSpeed);
         _rigidbody.MovePosition(_rigidbody.position + transform.TransformDirection(_moveDir * _moveSpeed) * Time.fixedDeltaTime);
     }
 

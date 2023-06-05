@@ -329,7 +329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
+  m_SynchronizeScale: 1
   m_UseLocal: 1
 --- !u!114 &7575444597585795479
 MonoBehaviour:
@@ -347,7 +347,9 @@ MonoBehaviour:
   _explosionMesh: {fileID: 1470944184963851835}
   _baseExplosionEndSize: 6
   _explosionIncreaseRatePerSec: 6
+  _spawnedByPlayer: {fileID: 0}
   _photonView: {fileID: 2455397271926928905}
+  _bombRigidBody: {fileID: 5662330177607268878}
 --- !u!1 &6148738320248165323
 GameObject:
   m_ObjectHideFlags: 0

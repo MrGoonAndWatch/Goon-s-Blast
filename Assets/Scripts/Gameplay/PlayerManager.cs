@@ -67,10 +67,26 @@ public class PlayerManager : MonoBehaviourPunCallbacks
             Debug.LogError("Could not load match settings from provided json in RPC call!");
             matchSettings = new GameConstants.MatchSettings();
         }
-        // TODO: Use matchSettings.MatchType to determine which implementation to add here!
-        var survivorRulesManager = gameObject.AddComponent<SurvivorMatchRulesManager>();
-        survivorRulesManager.Init(matchSettings.TimerSeconds > 0, TimeSpan.FromSeconds(matchSettings.TimerSeconds));
-        _matchRulesManager = survivorRulesManager;
+
+        MatchRulesManager rulesManager;
+        switch (matchSettings.MatchType)
+        {
+            case GameConstants.GameMatchType.Survival:
+                rulesManager = gameObject.AddComponent<SurvivorMatchRulesManager>();
+                break;
+            case GameConstants.GameMatchType.KillCount:
+                rulesManager = gameObject.AddComponent<KillMatchRulesManager>();
+                ((KillMatchRulesManager) rulesManager).SetKillsToWin(matchSettings.KillsToWin);
+                break;
+            default:
+                rulesManager = gameObject.AddComponent<SurvivorMatchRulesManager>();
+                break;
+        }
+        
+        var timer = gameObject.AddComponent<MatchTimer>();
+        timer.Init(matchSettings.TimerSeconds > 0, TimeSpan.FromSeconds(matchSettings.TimerSeconds));
+        rulesManager.Init(timer);
+        _matchRulesManager = rulesManager;
     }
 
     private void LoadLevel()
@@ -202,6 +218,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player oldPlayer)
     {
+        // TODO: TRANSFER MATCH RULES WHEN HOST LEAVES!
         _refreshPlayerList = true;
     }
 }
