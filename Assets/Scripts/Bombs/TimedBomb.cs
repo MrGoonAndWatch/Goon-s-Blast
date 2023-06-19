@@ -17,6 +17,8 @@ public class TimedBomb : Bomb
 
     private void HandleTimer()
     {
+        if (!_photonView.IsMine || (!RoomManager.GetMatchSettings().RunBombTimerWhenHeld && IsHeld())) return;
+
         _bombTimeRemaining -= Time.deltaTime;
         if (_bombTimeRemaining <= 0)
             Explode();

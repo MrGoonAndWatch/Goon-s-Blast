@@ -16,12 +16,14 @@ public abstract class Bomb : MonoBehaviour
     private const float ThrowForceVerticalAddition = 150.0f;
     private const float ThrowForceVerticalMomentum = 15.0f;
 
+    public int BombNumber;
+
     protected bool _initialized;
     private float _maxExplosionSize;
 
     public PlayerController _spawnedByPlayer;
     [SerializeField]
-    private PhotonView _photonView;
+    protected PhotonView _photonView;
 
     protected bool _exploding;
     private float _currentScale = 1.0f;
@@ -36,35 +38,48 @@ public abstract class Bomb : MonoBehaviour
 
     public void Pickup(PlayerController playerPickingUp)
     {
-        _photonView.RPC(nameof(PickupBomb), RpcTarget.All, playerPickingUp.GetPhotonViewId());
+        _isHeld = true;
+        _photonView.RPC(nameof(DisableGravity), RpcTarget.All);
+        if(!_photonView.IsMine)
+            _photonView.TransferOwnership(playerPickingUp.GetPhotonViewOwner());
+        _isHeld = true;
+        _heldByPlayer = playerPickingUp;
     }
 
     [PunRPC]
-    public void PickupBomb(int playerPhotonId)
+    public void DisableGravity()
     {
-        if (!_photonView.IsMine) return;
-
-        // I hate this code :(
-        var allPlayers = FindObjectsOfType<PlayerController>();
-        var targetPlayer = allPlayers.FirstOrDefault(p => p.GetPhotonViewId() == playerPhotonId);
-
-        if (targetPlayer != null)
-        {
-            _isHeld = true;
-            _heldByPlayer = targetPlayer;
+        if(_bombRigidBody != null)
             _bombRigidBody.useGravity = false;
-        }
+    }
+
+    public bool IsHeld()
+    {
+        return _isHeld;
+    }
+
+    public void OnOwnershipRequest(object[] viewAndPlayer)
+    {
+        Debug.Log($"OnOwnershipRequest(): Player {viewAndPlayer[1]}, view {viewAndPlayer[0]}");
     }
 
     public void Throw(Vector3 direction)
     {
+        if (_exploding) return;
+
         _photonView.RPC(nameof(TossBomb), RpcTarget.All, direction.x, direction.y, direction.z);
     }
 
     [PunRPC]
     public void TossBomb(float xVelocity, float yVelocity, float zVelocity)
     {
-        if (!_photonView.IsMine) return;
+        if (_photonView.IsMine)
+        {
+            // TODO: Don't bother transferring ownership here if player holding bomb is the player that spawned it.
+            _photonView.TransferOwnership(_spawnedByPlayer.GetPhotonViewOwner());
+        }
+
+        if (_bombRigidBody == null) return;
         
         _isThrown = true;
         _throwDir = new Vector3(xVelocity * ThrowForceHorizontal, 0, zVelocity * ThrowForceHorizontal);
@@ -74,21 +89,35 @@ public abstract class Bomb : MonoBehaviour
         _heldByPlayer = null;
         _bombRigidBody.useGravity = true;
         _bombRigidBody.AddForce(0, yVelocity * ThrowForceVerticalMomentum + ThrowForceVerticalAddition, 0);
+        // Reset timer on timed bombs.
+        if (!RoomManager.GetMatchSettings().RunBombTimerWhenHeld)
+            InitBombData();
     }
 
     public void Drop()
     {
+        if (_exploding) return;
+
         _photonView.RPC(nameof(DropBomb), RpcTarget.All);
     }
 
     [PunRPC]
     public void DropBomb()
     {
-        if (!_photonView.IsMine || _exploding) return;
-        
+        if (_photonView.IsMine)
+        {
+            // TODO: Don't bother transferring ownership here if player holding bomb is the player that spawned it.
+            _photonView.TransferOwnership(_spawnedByPlayer.GetPhotonViewOwner());
+        }
+
+        if (_bombRigidBody == null) return;
+
         _isHeld = false;
         _heldByPlayer = null;
         _bombRigidBody.useGravity = true;
+        // Reset timer on timed bombs.
+        if (!RoomManager.GetMatchSettings().RunBombTimerWhenHeld)
+            InitBombData();
     }
 
     public bool IsMine()
@@ -96,19 +125,20 @@ public abstract class Bomb : MonoBehaviour
         return _photonView.IsMine;
     }
 
-    public void Initialize(PlayerController spawnedByPlayer, int firePower)
+    public void Initialize(PlayerController spawnedByPlayer, int firePower, int bombNumber)
     {
         _spawnedByPlayer = spawnedByPlayer;
-        _photonView.RPC(nameof(InitParams), RpcTarget.All, firePower, spawnedByPlayer.GetPhotonViewId());
+        _photonView.RPC(nameof(InitParams), RpcTarget.All, firePower, bombNumber, spawnedByPlayer.GetPhotonViewId());
     }
 
     [PunRPC]
-    protected void InitParams(int firePower, int spawnedByPlayerPvId)
+    protected void InitParams(int firePower, int bombNumber, int spawnedByPlayerPvId)
     {
         if (_spawnedByPlayer == null)
             _spawnedByPlayer = FindObjectsOfType<PlayerController>()
                 .FirstOrDefault(pc => pc.GetPhotonViewId() == spawnedByPlayerPvId);
         _maxExplosionSize = _baseExplosionEndSize * firePower;
+        BombNumber = bombNumber;
         InitBombData();
         _initialized = true;
     }
@@ -173,7 +203,7 @@ public abstract class Bomb : MonoBehaviour
     public void Explode()
     {
         _photonView.RPC(nameof(StartExplosion), RpcTarget.All);
-        if (_spawnedByPlayer != null && _photonView.IsMine)
+        if (_spawnedByPlayer != null)
             _spawnedByPlayer.IncrementBombCount(this);
     }
 

@@ -37,6 +37,8 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private Slider _killsToWin;
         [SerializeField] private TMP_Dropdown _suddenDeathPicker;
         [SerializeField] private Slider _suddenDeathTimer;
+        [SerializeField] private Toggle _runBombTimerWhenHeldToggle;
+        [SerializeField] private Toggle _detonateBombsWhenHeldToggle;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -309,7 +311,9 @@ namespace Assets.Scripts.MainMenu
                 TimerSeconds = (int) _matchTimer.value,
                 KillsToWin = (int) _killsToWin.value,
                 SuddenDeathType = (GameConstants.SuddenDeathType) _suddenDeathPicker.value,
-                SuddenDeathStartsAt = (int)_suddenDeathTimer.value
+                SuddenDeathStartsAt = (int)_suddenDeathTimer.value,
+                RunBombTimerWhenHeld = _runBombTimerWhenHeldToggle.isOn,
+                AllowDetonationsWhenHeld = _detonateBombsWhenHeldToggle.isOn
             };
             RoomManager.SaveMatchSettings(newSettings);
 

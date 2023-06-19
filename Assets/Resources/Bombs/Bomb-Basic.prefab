@@ -211,7 +211,7 @@ MonoBehaviour:
   Group: 0
   prefixField: -1
   Synchronization: 3
-  OwnershipTransfer: 0
+  OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
   - {fileID: 1554325708121720706}
@@ -250,6 +250,7 @@ MonoBehaviour:
   _explosionMesh: {fileID: 1470944184963851835}
   _baseExplosionEndSize: 6
   _explosionIncreaseRatePerSec: 6
+  BombNumber: 0
   _spawnedByPlayer: {fileID: 0}
   _photonView: {fileID: 2455397271926928905}
   _bombRigidBody: {fileID: 5662330177607268878}

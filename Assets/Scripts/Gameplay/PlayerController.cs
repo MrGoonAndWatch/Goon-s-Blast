@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts.Constants;
 using Photon.Pun;
 using UnityEngine;
@@ -184,7 +185,16 @@ public class PlayerController : MonoBehaviour
             PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.RemoteBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>() :
             PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.BasicBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>();
         _bombs.Add(bombObject);
-        bombObject.Initialize(this, _currentFirepower);
+        var nextBombNumber = 0;
+        for (var i = 0; i < _bombs.Count; i++)
+        {
+            if (!_bombs.Any(b => b.BombNumber == i))
+            {
+                nextBombNumber = i;
+                break;
+            }
+        }
+        bombObject.Initialize(this, _currentFirepower, nextBombNumber);
         _availableBombs--;
     }
 
@@ -194,7 +204,7 @@ public class PlayerController : MonoBehaviour
 
         for (var i = 0; i < _bombs.Count; i++)
         {
-            if (_bombs[i] is RemoteBomb)
+            if (_bombs[i] is RemoteBomb && (RoomManager.GetMatchSettings().AllowDetonationsWhenHeld || !_bombs[i].IsHeld()))
             {
                 _bombs[i].Explode();
                 return;
@@ -331,12 +341,21 @@ public class PlayerController : MonoBehaviour
 
     public void IncrementBombCount(Bomb explodedBomb)
     {
-        if (_photonView.IsMine)
-        {
-            _availableBombs++;
-            if (_availableBombs > MaxBombs) _availableBombs = MaxBombs;
+        _photonView.RPC(nameof(IncrementBombCountForPlayer), RpcTarget.All, explodedBomb.BombNumber);
+    }
+
+    [PunRPC]
+    public void IncrementBombCountForPlayer(int bombNumber)
+    {
+        if (!_photonView.IsMine) return;
+        
+        _availableBombs++;
+        if (_availableBombs > MaxBombs) _availableBombs = MaxBombs;
+        var explodedBomb = _bombs.FirstOrDefault(b => b.BombNumber == bombNumber);
+        if(explodedBomb == null)
+            Debug.LogWarning($"Couldn't find bomb #{bombNumber} in player {_photonView.Owner.UserId}'s bomb list when incrementing!");
+        else
             _bombs.Remove(explodedBomb);
-        }
     }
 
     public void IncreaseMaxBombs(int amount = 1)
@@ -441,6 +460,11 @@ public class PlayerController : MonoBehaviour
         var powerup = c.GetComponent<Powerup>();
         if (powerup != null && !powerup.AlreadyPickedUp())
             powerup.PickUp(this);
+    }
+
+    public Photon.Realtime.Player GetPhotonViewOwner()
+    {
+        return _photonView.Owner;
     }
 
     public int GetPhotonViewId()

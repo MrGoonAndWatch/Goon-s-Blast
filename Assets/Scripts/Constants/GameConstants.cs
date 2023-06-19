@@ -93,6 +93,8 @@ namespace Assets.Scripts.Constants
             public int KillsToWin { get; set; }
             public SuddenDeathType SuddenDeathType { get; set; }
             public int SuddenDeathStartsAt { get; set; }
+            public bool RunBombTimerWhenHeld { get; set; }
+            public bool AllowDetonationsWhenHeld { get; set; }
         }
 
         public const string ConfigSettingsFilename = "goonsblast.settings";
