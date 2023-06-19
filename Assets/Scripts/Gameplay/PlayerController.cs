@@ -452,6 +452,7 @@ public class PlayerController : MonoBehaviour
     {
         _playerModel.SetActive(false);
         _dead = true;
+        if (_rigidbody != null) _rigidbody.useGravity = false;
         Debug.Log($"Player {GetName()} was killed by {causeOfDeath}!");
     }
     
