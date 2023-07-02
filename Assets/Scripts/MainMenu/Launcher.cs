@@ -17,6 +17,7 @@ namespace Assets.Scripts.MainMenu
     {
         public static Launcher Instance;
 
+        [Header("Room Setup / Display")]
         [SerializeField] private TMP_InputField _roomNameInputField;
         [SerializeField] private TMP_Text _errorDisplay;
         [SerializeField] private TMP_Text _roomNameDisplay;
@@ -24,14 +25,19 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private GameObject _roomListItemPrefab;
         [SerializeField] private Transform _playerListContent;
         [SerializeField] private GameObject _playerListItemPrefab;
+        [Header("Settings Menu")]
         [SerializeField] private TMP_InputField _usernameInput;
+        [SerializeField] private Toggle _invertXAxisCheckbox;
+        [SerializeField] private Toggle _invertYAxisCheckbox;
+        [SerializeField] private Slider _soundMasterVolumeSlider;
+        [SerializeField] private Slider _soundMusicVolumeSlider;
+        [SerializeField] private Slider _soundSfxVolumeSlider;
+        [Header("Match Settings")]
         [SerializeField] private GameObject _startGameButton;
         [SerializeField] private Transform _mapList;
         [SerializeField] private Transform _mapEditList;
         [SerializeField] private GameObject _mapSelectPrefab;
         [SerializeField] private TMP_Text _selectedMapLabel;
-        [SerializeField] private Toggle _invertXAxisCheckbox;
-        [SerializeField] private Toggle _invertYAxisCheckbox;
         [SerializeField] private TMP_Dropdown _matchTypePicker;
         [SerializeField] private Slider _matchTimer;
         [SerializeField] private Slider _killsToWin;
@@ -39,6 +45,7 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private Slider _suddenDeathTimer;
         [SerializeField] private Toggle _runBombTimerWhenHeldToggle;
         [SerializeField] private Toggle _detonateBombsWhenHeldToggle;
+        [SerializeField] private TMP_Dropdown _matchSongPicker;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -72,10 +79,14 @@ namespace Assets.Scripts.MainMenu
             if (configSettings == null)
                 return;
 
+            GoonsBlastAudioManager.UpdateVolume(configSettings);
             PhotonNetwork.NickName = configSettings.Username;
             _usernameInput.text = configSettings.Username;
             _invertXAxisCheckbox.isOn = configSettings.InvertXAxisLook;
             _invertYAxisCheckbox.isOn = configSettings.InvertYAxisLook;
+            _soundMasterVolumeSlider.value = configSettings.SoundMasterVolume ?? 0.5f;
+            _soundMusicVolumeSlider.value = configSettings.SoundMusicVolume ?? 0.5f;
+            _soundSfxVolumeSlider.value = configSettings.SoundSfxVolume ?? 0.5f;
         }
 
         public override void OnConnectedToMaster()
@@ -289,12 +300,28 @@ namespace Assets.Scripts.MainMenu
             {
                 Username = _usernameInput.text,
                 InvertXAxisLook = _invertXAxisCheckbox.isOn,
-                InvertYAxisLook = _invertYAxisCheckbox.isOn
+                InvertYAxisLook = _invertYAxisCheckbox.isOn,
+                SoundMasterVolume = _soundMasterVolumeSlider.value,
+                SoundMusicVolume = _soundMusicVolumeSlider.value,
+                SoundSfxVolume = _soundSfxVolumeSlider.value
             };
+            GoonsBlastAudioManager.UpdateVolume(newSettings);
             RoomManager.SaveSettings(newSettings);
             PhotonNetwork.NickName = _usernameInput.text;
 
             MenuManager.Instance.OpenMenu(MenuType.Title);
+        }
+
+        public void OnSoundSettingsChanged()
+        {
+            var newSettings = new GameConstants.ConfigSettings
+            {
+                SoundMasterVolume = _soundMasterVolumeSlider.value,
+                SoundMusicVolume = _soundMusicVolumeSlider.value,
+                SoundSfxVolume = _soundSfxVolumeSlider.value
+            };
+
+            GoonsBlastAudioManager.UpdateVolume(newSettings);
         }
 
         public void OnLevelEditorClick()
@@ -313,7 +340,8 @@ namespace Assets.Scripts.MainMenu
                 SuddenDeathType = (GameConstants.SuddenDeathType) _suddenDeathPicker.value,
                 SuddenDeathStartsAt = (int)_suddenDeathTimer.value,
                 RunBombTimerWhenHeld = _runBombTimerWhenHeldToggle.isOn,
-                AllowDetonationsWhenHeld = _detonateBombsWhenHeldToggle.isOn
+                AllowDetonationsWhenHeld = _detonateBombsWhenHeldToggle.isOn,
+                SongNumber = _matchSongPicker.value
             };
             RoomManager.SaveMatchSettings(newSettings);
 

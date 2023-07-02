@@ -202,6 +202,7 @@ public abstract class Bomb : MonoBehaviour
 
     public void Explode()
     {
+        GoonsBlastAudioManager.PlayOneShot(GoonsBlastFmodAudioEvents.ExplosionSound, transform.position);
         _photonView.RPC(nameof(StartExplosion), RpcTarget.All);
         if (_spawnedByPlayer != null)
             _spawnedByPlayer.IncrementBombCount(this);

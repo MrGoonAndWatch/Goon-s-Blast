@@ -68,6 +68,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
             matchSettings = new GameConstants.MatchSettings();
         }
 
+        // TODO: Get Campaign mode songs or whatever if that ends up being a different list based on match type or whatever.
+        GoonsBlastAudioManager.ChangeMusic(GoonsBlastFmodAudioEvents.GetVsSong(matchSettings.SongNumber));
+
         MatchRulesManager rulesManager;
         switch (matchSettings.MatchType)
         {

@@ -347,6 +347,13 @@ MonoBehaviour:
   _explosionMesh: {fileID: 1470944184963851835}
   _baseExplosionEndSize: 6
   _explosionIncreaseRatePerSec: 6
+  _explosionSound:
+    Guid:
+      Data1: -1425435050
+      Data2: 1255942033
+      Data3: 754169494
+      Data4: 120521180
+    Path: event:/BombBlast
   BombNumber: 0
   _spawnedByPlayer: {fileID: 0}
   _photonView: {fileID: 2455397271926928905}

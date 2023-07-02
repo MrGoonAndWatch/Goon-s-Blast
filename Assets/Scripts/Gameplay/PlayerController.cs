@@ -435,7 +435,7 @@ public class PlayerController : MonoBehaviour
                 causeOfDeath = $"{playerWhoLaidBomb.GetName()}'s explosion";
             }
             
-            _photonView.RPC(nameof(Die), RpcTarget.All, causeOfDeath);
+            _photonView.RPC(nameof(Die), RpcTarget.All, causeOfDeath, (int)GameConstants.PlayerDeathSound.Bomb);
         }
     }
 
@@ -444,18 +444,33 @@ public class PlayerController : MonoBehaviour
         if (_dead) return;
 
         if (_playerModel.transform.position.y < DeathPlane)
-            _photonView.RPC(nameof(Die), RpcTarget.All, "falling");
+            _photonView.RPC(nameof(Die), RpcTarget.All, "falling", (int)GameConstants.PlayerDeathSound.None);
     }
 
     [PunRPC]
-    private void Die(string causeOfDeath)
+    private void Die(string causeOfDeath, int deathSound)
     {
+        PlayDeathSound(deathSound);
         _playerModel.SetActive(false);
         _dead = true;
         if (_rigidbody != null) _rigidbody.useGravity = false;
         Debug.Log($"Player {GetName()} was killed by {causeOfDeath}!");
     }
-    
+
+    private void PlayDeathSound(int deathSound)
+    {
+        var deathSoundEnum = (GameConstants.PlayerDeathSound) deathSound;
+        if (deathSoundEnum != GameConstants.PlayerDeathSound.None)
+        {
+            switch (deathSoundEnum)
+            {
+                case GameConstants.PlayerDeathSound.Bomb:
+                    GoonsBlastAudioManager.PlayOneShot(GoonsBlastFmodAudioEvents.PlayerExplodeSound, transform.position);
+                    break;
+            }
+        }
+    }
+
     private void HandlePowerupCollision(Collider c)
     {
         var powerup = c.GetComponent<Powerup>();

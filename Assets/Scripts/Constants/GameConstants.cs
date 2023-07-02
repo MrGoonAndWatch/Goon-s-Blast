@@ -50,6 +50,12 @@ namespace Assets.Scripts.Constants
             BombRain = 2
         }
 
+        public enum PlayerDeathSound
+        {
+            None =  0,
+            Bomb = 1
+        }
+
         public static class SpawnablePrefabs
         {
             public const string PlayerManager = "PlayerManager";
@@ -84,6 +90,9 @@ namespace Assets.Scripts.Constants
             public string Username { get; set; }
             public bool InvertXAxisLook { get; set; }
             public bool InvertYAxisLook { get; set; }
+            public float? SoundMasterVolume { get; set; }
+            public float? SoundMusicVolume { get; set; }
+            public float? SoundSfxVolume { get; set; }
         }
 
         public class MatchSettings
@@ -95,6 +104,7 @@ namespace Assets.Scripts.Constants
             public int SuddenDeathStartsAt { get; set; }
             public bool RunBombTimerWhenHeld { get; set; }
             public bool AllowDetonationsWhenHeld { get; set; }
+            public int SongNumber { get; set; }
         }
 
         public const string ConfigSettingsFilename = "goonsblast.settings";

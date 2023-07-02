@@ -29,7 +29,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1903233095705832970}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -67,3 +68,145 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!1 &8981209844269952997
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1903233095705832970}
+  - component: {fileID: 5999998729464137220}
+  - component: {fileID: 6490687128067141994}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1903233095705832970
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8981209844269952997}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3173695608763543326}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5999998729464137220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8981209844269952997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e2ce3cb7ee610f468819a7bbc05a05a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  masterVolume: 0.5
+  musicVolume: 0.5
+  sfxVolume: 0.5
+--- !u!114 &6490687128067141994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8981209844269952997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f3302af00eae8a4eb1a9fb6e75a3b71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _explosionSound:
+    Guid:
+      Data1: -1425435050
+      Data2: 1255942033
+      Data3: 754169494
+      Data4: 120521180
+    Path: event:/SFX/BombBlast
+  _playerExplodeSound:
+    Guid:
+      Data1: 401998089
+      Data2: 1212158574
+      Data3: 977107879
+      Data4: 1331284160
+    Path: event:/SFX/PlayerExplode
+  _vsModeSongs:
+  - Guid:
+      Data1: 1652878691
+      Data2: 1168574263
+      Data3: 596558466
+      Data4: 1338779851
+    Path: event:/Songs/Song1
+  - Guid:
+      Data1: -1033446352
+      Data2: 1223038103
+      Data3: -1598282591
+      Data4: 956267229
+    Path: event:/Songs/Song2
+  - Guid:
+      Data1: -617357365
+      Data2: 1157160264
+      Data3: 390756280
+      Data4: -1585774080
+    Path: event:/Songs/Song3
+  - Guid:
+      Data1: 609820987
+      Data2: 1323863030
+      Data3: -2083684164
+      Data4: 1149011300
+    Path: event:/Songs/Song4
+  - Guid:
+      Data1: -1430077535
+      Data2: 1083829118
+      Data3: 1433580990
+      Data4: -239904896
+    Path: event:/Songs/Song5
+  - Guid:
+      Data1: -1410479616
+      Data2: 1133708707
+      Data3: 737583488
+      Data4: -970680599
+    Path: event:/Songs/Song6
+  - Guid:
+      Data1: 1569874964
+      Data2: 1135074932
+      Data3: -1875351677
+      Data4: -854218706
+    Path: event:/Songs/Song7
+  - Guid:
+      Data1: 1967307405
+      Data2: 1174091274
+      Data3: -1768687992
+      Data4: -2029265364
+    Path: event:/Songs/Song8
+  - Guid:
+      Data1: -1452070946
+      Data2: 1128112496
+      Data3: -129622653
+      Data4: 610706272
+    Path: event:/Songs/Song9
+  - Guid:
+      Data1: 922764532
+      Data2: 1298257259
+      Data3: 460725912
+      Data4: -1383323962
+    Path: event:/Songs/Song10
+  _menuSong:
+    Guid:
+      Data1: -2081159818
+      Data2: 1232336848
+      Data3: -776812155
+      Data4: 173761588
+    Path: event:/Songs/MenuMusic

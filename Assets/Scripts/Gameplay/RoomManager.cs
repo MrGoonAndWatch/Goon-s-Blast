@@ -153,8 +153,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
     {
         if (scene.buildIndex == (int) GameConstants.LevelIndexes.Game)
-        {
             PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.PlayerManager, Vector3.zero, Quaternion.identity);
-        }
+        else if(scene.buildIndex != 0)
+            GoonsBlastAudioManager.ChangeMusic(GoonsBlastFmodAudioEvents.MenuSong);
     }
 }
