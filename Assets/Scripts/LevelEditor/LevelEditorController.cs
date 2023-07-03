@@ -68,6 +68,7 @@ public class LevelEditorController : MonoBehaviour
     private InputAction _propertiesMenu;
     private InputAction _disableMouseMove;
     private InputAction _mouseWheelScroll;
+    private InputAction _resetCamera;
 
     private bool _disableInputs;
     private bool _propertyMenuOpened;
@@ -116,6 +117,7 @@ public class LevelEditorController : MonoBehaviour
         _propertiesMenu = _editorControls.Editor.PropertiesMenu;
         _disableMouseMove = _editorControls.Editor.DisableMouseMove;
         _mouseWheelScroll = _editorControls.Editor.MouseWheelMove;
+        _resetCamera = _editorControls.Editor.ResetCamera;
 
         _moveXZ.Enable();
         _moveUp.Enable();
@@ -131,6 +133,7 @@ public class LevelEditorController : MonoBehaviour
         _propertiesMenu.Enable();
         _disableMouseMove.Enable();
         _mouseWheelScroll.Enable();
+        _resetCamera.Enable();
 
         _moveXZ.performed += OnMoveCursor;
         _moveXZ.canceled += OnStopMovingCursor;
@@ -151,6 +154,7 @@ public class LevelEditorController : MonoBehaviour
         _propertiesMenu.performed += OnPropertiesMenu;
         _disableMouseMove.performed += OnDisableMouseMove;
         _mouseWheelScroll.performed += OnMouseWheelScrolled;
+        _resetCamera.performed += OnResetCamera;
     }
 
     void OnDisable()
@@ -169,6 +173,7 @@ public class LevelEditorController : MonoBehaviour
         _propertiesMenu.Disable();
         _disableMouseMove.Disable();
         _mouseWheelScroll.Disable();
+        _resetCamera.Disable();
     }
 
     private void Start()
@@ -250,6 +255,13 @@ public class LevelEditorController : MonoBehaviour
         _camera.transform.localEulerAngles = Vector3.left * _verticalLookRotation * invertYAxis;
     }
 
+    private void ResetCameraRotation()
+    {
+        _verticalLookRotation = 0;
+        _cameraContainer.transform.rotation = Quaternion.identity;
+        _camera.transform.localEulerAngles = Vector3.left * _verticalLookRotation;
+    }
+
     private void FollowCursorWithCamera()
     {
         var distance = (_camera.transform.position - _cursor.position).magnitude;
@@ -291,7 +303,6 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnMouseMoveEnd(InputAction.CallbackContext context)
     {
-        Debug.Log("OnMouseMoveEnd");
         _movingMouse = false;
         _rotatingCamera = false;
     }
@@ -340,6 +351,12 @@ public class LevelEditorController : MonoBehaviour
             MoveCursorUp();
         else if(scrollValue.y < 0)
             MoveCursorDown();
+    }
+
+    private void OnResetCamera(InputAction.CallbackContext context)
+    {
+        if (_disableInputs) return;
+        ResetCameraRotation();
     }
 
     public void OnClosePropertyMenu()

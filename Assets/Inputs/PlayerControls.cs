@@ -452,6 +452,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ResetCamera"",
+                    ""type"": ""Button"",
+                    ""id"": ""f8916540-3073-48d6-9df6-eeddff049c55"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -751,6 +760,28 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""MouseWheelMove"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""deb8f812-490d-4970-b1da-9011909e8e47"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ResetCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a3428f09-a60d-4384-a96e-322b33be45f8"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ResetCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -934,6 +965,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Editor_PropertiesMenu = m_Editor.FindAction("PropertiesMenu", throwIfNotFound: true);
         m_Editor_DisableMouseMove = m_Editor.FindAction("DisableMouseMove", throwIfNotFound: true);
         m_Editor_MouseWheelMove = m_Editor.FindAction("MouseWheelMove", throwIfNotFound: true);
+        m_Editor_ResetCamera = m_Editor.FindAction("ResetCamera", throwIfNotFound: true);
         // Editor-SaveMenu
         m_EditorSaveMenu = asset.FindActionMap("Editor-SaveMenu", throwIfNotFound: true);
         m_EditorSaveMenu_Confirm = m_EditorSaveMenu.FindAction("Confirm", throwIfNotFound: true);
@@ -1101,6 +1133,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Editor_PropertiesMenu;
     private readonly InputAction m_Editor_DisableMouseMove;
     private readonly InputAction m_Editor_MouseWheelMove;
+    private readonly InputAction m_Editor_ResetCamera;
     public struct EditorActions
     {
         private @PlayerControls m_Wrapper;
@@ -1119,6 +1152,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @PropertiesMenu => m_Wrapper.m_Editor_PropertiesMenu;
         public InputAction @DisableMouseMove => m_Wrapper.m_Editor_DisableMouseMove;
         public InputAction @MouseWheelMove => m_Wrapper.m_Editor_MouseWheelMove;
+        public InputAction @ResetCamera => m_Wrapper.m_Editor_ResetCamera;
         public InputActionMap Get() { return m_Wrapper.m_Editor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1170,6 +1204,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @MouseWheelMove.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
                 @MouseWheelMove.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
                 @MouseWheelMove.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
+                @ResetCamera.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnResetCamera;
+                @ResetCamera.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnResetCamera;
+                @ResetCamera.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnResetCamera;
             }
             m_Wrapper.m_EditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -1216,6 +1253,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @MouseWheelMove.started += instance.OnMouseWheelMove;
                 @MouseWheelMove.performed += instance.OnMouseWheelMove;
                 @MouseWheelMove.canceled += instance.OnMouseWheelMove;
+                @ResetCamera.started += instance.OnResetCamera;
+                @ResetCamera.performed += instance.OnResetCamera;
+                @ResetCamera.canceled += instance.OnResetCamera;
             }
         }
     }
@@ -1314,6 +1354,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnPropertiesMenu(InputAction.CallbackContext context);
         void OnDisableMouseMove(InputAction.CallbackContext context);
         void OnMouseWheelMove(InputAction.CallbackContext context);
+        void OnResetCamera(InputAction.CallbackContext context);
     }
     public interface IEditorSaveMenuActions
     {
