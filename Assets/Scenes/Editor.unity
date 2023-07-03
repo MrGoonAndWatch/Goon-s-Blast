@@ -629,8 +629,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -200, y: -212}
-  m_SizeDelta: {x: 400, y: 425}
+  m_AnchoredPosition: {x: -200, y: -250}
+  m_SizeDelta: {x: 400, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &179851793
 MonoBehaviour:
@@ -744,7 +744,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -200, y: -650}
+  m_AnchoredPosition: {x: -200, y: -750}
   m_SizeDelta: {x: 400, y: 425}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &187636776
@@ -3613,8 +3613,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -200, y: -212}
-  m_SizeDelta: {x: 400, y: 425}
+  m_AnchoredPosition: {x: -200, y: -250}
+  m_SizeDelta: {x: 400, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1394088397
 MonoBehaviour:
@@ -3655,6 +3655,11 @@ MonoBehaviour:
     - Save Level
 
     R Click + Drag - Rotate
+
+    Space - Reset Camera
+
+    V -
+    Toggle mouse move
 
     X - Hide Controls'
   m_isRightToLeft: 0
@@ -5266,7 +5271,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -200, y: -650}
+  m_AnchoredPosition: {x: -200, y: -750}
   m_SizeDelta: {x: 400, y: 425}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1958925948
@@ -5307,7 +5312,10 @@ MonoBehaviour:
 
     Right Stick - Rotate
 
-    Select - Hide Controls'
+    Top Btn - Reset Camera
+
+    Select
+    - Hide Controls'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
