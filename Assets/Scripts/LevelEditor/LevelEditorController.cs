@@ -68,6 +68,7 @@ public class LevelEditorController : MonoBehaviour
     private bool _propertyMenuOpened;
     private bool _movingHorizontally;
     private bool _movingVertically;
+    private bool _placingTiles;
 
     private LevelData _levelData;
     private List<LevelEditorTile> _generatedTiles;
@@ -124,6 +125,7 @@ public class LevelEditorController : MonoBehaviour
         _tileNextForwards.performed += OnTileNext;
         _tileBack.performed += OnTileBack;
         _placeTile.performed += OnPlaceTile;
+        _placeTile.canceled += OnEndPlaceTile;
         _saveLevel.performed += OnSaveLevel;
         _minimizeUi.performed += OnMinimize;
         _rotateCamera.performed += OnRotateCamera;
@@ -197,6 +199,7 @@ public class LevelEditorController : MonoBehaviour
         if(_rotatingCamera)
             HandleRotateCamera();
         FollowCursorWithCamera();
+        HandleBlockPlacement();
     }
 
     public LevelData GetLevelData()
@@ -230,6 +233,13 @@ public class LevelEditorController : MonoBehaviour
             return;
 
         _cameraContainer.transform.position = Vector3.MoveTowards(_cameraContainer.transform.position, _cursor.position, _cameraMoveSpeed);
+    }
+
+    private void HandleBlockPlacement()
+    {
+        if (!_placingTiles || _disableInputs)
+            return;
+        SetTile();
     }
 
     private void OnMouseCameraClickStart(InputAction.CallbackContext context)
@@ -389,6 +399,9 @@ public class LevelEditorController : MonoBehaviour
     private void AddCurrentTile()
     {
         var currentTile = GetCurrentTile();
+        if (currentTile != null && currentTile.Type == _currentBlockType)
+            return;
+
         if (currentTile == null)
         {
             currentTile = new TileData {Type = _currentBlockType, X = _currentX, Y = _currentY, Z = _currentZ};
@@ -515,9 +528,12 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnPlaceTile(InputAction.CallbackContext context)
     {
-        if (_disableInputs)
-            return;
-        SetTile();
+        _placingTiles = true;
+    }
+
+    private void OnEndPlaceTile(InputAction.CallbackContext context)
+    {
+        _placingTiles = false;
     }
 
     private void OnSaveLevel(InputAction.CallbackContext context)
