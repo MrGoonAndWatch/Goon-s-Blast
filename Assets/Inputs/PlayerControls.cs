@@ -642,6 +642,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""0907922c-4e24-46b6-9b63-ad69cfd850c3"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PlaceTile"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""074535b2-b3ac-4b1f-acd7-961a908d8549"",
                     ""path"": ""<Gamepad>/start"",
                     ""interactions"": """",
