@@ -48,8 +48,8 @@ public class LevelEditorController : MonoBehaviour
 
     private const float MouseMoveCursorDeadzone = 5;
     private const float ControllerCursorMoveDeadzone = 0.75f;
-    private const float MouseCursorMoveCooldown = 0.01f;
-    private const float ButtonCursorMoveCooldown = 0.05f;
+    private const float HoldCursorMoveCooldown = 0.01f;
+    private const float ButtonCursorMoveInitCooldown = 0.5f;
     private const float HorizontalMouseSensitivity = 1.0f;
     private const float VerticalMouseSensitivity = 1.0f;
     private float _verticalLookRotation;
@@ -78,7 +78,6 @@ public class LevelEditorController : MonoBehaviour
     private bool _mouseMoveDisabled;
     private float _cursorXZMoveCooldown;
     private float _cursorYMoveCooldown;
-    private bool _movingMouse;
 
     private LevelData _levelData;
     private List<LevelEditorTile> _generatedTiles;
@@ -89,6 +88,9 @@ public class LevelEditorController : MonoBehaviour
     private TileType _currentBlockType;
     private bool _minimized = true;
 
+    private Vector2 _currentCursorMoveInput;
+    private bool _holdingCursorUp;
+    private bool _holdingCursorDown;
     private Vector2 _currentMouseDrag;
     private Vector2 _rotateCameraInput;
     private bool _rotatingCamera;
@@ -138,7 +140,9 @@ public class LevelEditorController : MonoBehaviour
         _moveXZ.performed += OnMoveCursor;
         _moveXZ.canceled += OnStopMovingCursor;
         _moveUp.performed += OnMoveCursorUp;
+        _moveUp.canceled += OnMoveCursorUpEnd;
         _moveDown.performed += OnMoveCursorDown;
+        _moveDown.canceled += OnMoveCursorDownEnd;
         _tileNextForwards.performed += OnTileNext;
         _tileBack.performed += OnTileBack;
         _placeTile.performed += OnPlaceTile;
@@ -228,7 +232,9 @@ public class LevelEditorController : MonoBehaviour
             HandleRotateCamera();
         FollowCursorWithCamera();
         HandleBlockPlacement();
+        MoveCursorByButtonOrStick(false);
         MoveCursorByMouse();
+        MoveCursorUpOrDown();
     }
 
     public LevelData GetLevelData()
@@ -290,7 +296,6 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnRotateCameraMouse(InputAction.CallbackContext context)
     {
-        _movingMouse = true;
         _currentMouseDrag = context.ReadValue<Vector2>();
         if (_holdingRotateMouseButton) OnRotateCamera(context);
     }
@@ -303,7 +308,6 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnMouseMoveEnd(InputAction.CallbackContext context)
     {
-        _movingMouse = false;
         _rotatingCamera = false;
     }
 
@@ -542,6 +546,27 @@ public class LevelEditorController : MonoBehaviour
         _currentBlockDisplayImage.sprite = newSprite;
     }
 
+    private void MoveCursorUpOrDown()
+    {
+        if (_disableInputs || _cursorYMoveCooldown > 0)
+            return;
+
+        var moved = false;
+        if (_holdingCursorUp)
+        {
+            MoveCursorUp();
+            moved = true;
+        }
+        if (_holdingCursorDown)
+        {
+            MoveCursorDown();
+            moved = true;
+        }
+
+        if(moved)
+            _cursorYMoveCooldown = HoldCursorMoveCooldown;
+    }
+
     private void MoveCursorByMouse()
     {
         if (_disableInputs || _mouseMoveDisabled || _cursorXZMoveCooldown > 0) return;
@@ -570,46 +595,80 @@ public class LevelEditorController : MonoBehaviour
         }
 
         if (moved)
-            _cursorXZMoveCooldown = MouseCursorMoveCooldown;
+            _cursorXZMoveCooldown = HoldCursorMoveCooldown;
     }
 
-    // TODO: Make this work for joystick better (handle in update loop)!
+    private void MoveCursorByButtonOrStick(bool initInput)
+    {
+        if (_disableInputs || (!initInput && _cursorXZMoveCooldown > 0)) return;
+
+        var moved = false;
+        // TODO: Would be nice to use proper deadzone processors but they don't seem to work (everything comes through).
+        if (_currentCursorMoveInput.x >= ControllerCursorMoveDeadzone && (!initInput || !_movingHorizontally))
+        {
+            MoveCursorRight();
+            moved = true;
+        }
+        else if (_currentCursorMoveInput.x <= -ControllerCursorMoveDeadzone && (!initInput || !_movingHorizontally))
+        {
+            MoveCursorLeft();
+            moved = true;
+        }
+
+        if (_currentCursorMoveInput.y >= ControllerCursorMoveDeadzone && (!initInput || !_movingVertically))
+        {
+            MoveCursorForwards();
+            moved = true;
+        }
+        else if (_currentCursorMoveInput.y <= -ControllerCursorMoveDeadzone && (!initInput || !_movingVertically))
+        {
+            MoveCursorBackwards();
+            moved = true;
+        }
+
+        if (moved)
+            _cursorXZMoveCooldown = initInput ? ButtonCursorMoveInitCooldown : HoldCursorMoveCooldown;
+    }
+    
     private void OnMoveCursor(InputAction.CallbackContext context)
     {
-        if (_disableInputs)
-            return;
-
-        var moveDir = context.ReadValue<Vector2>();
-
-        // TODO: Would be nice to use proper deadzone processors but they don't seem to work (everything comes through).
-        if (moveDir.x >= ControllerCursorMoveDeadzone && !_movingHorizontally)
-            MoveCursorRight();
-        else if (moveDir.x <= -ControllerCursorMoveDeadzone && !_movingHorizontally)
-            MoveCursorLeft();
-        if (moveDir.y >= ControllerCursorMoveDeadzone && !_movingVertically)
-            MoveCursorForwards();
-        else if (moveDir.y <= -ControllerCursorMoveDeadzone && !_movingVertically)
-            MoveCursorBackwards();
+        _currentCursorMoveInput = context.ReadValue<Vector2>();
+        MoveCursorByButtonOrStick(true);
     }
 
     private void OnStopMovingCursor(InputAction.CallbackContext context)
     {
+        _currentCursorMoveInput = context.ReadValue<Vector2>();
         _movingHorizontally = false;
         _movingVertically = false;
     }
 
     private void OnMoveCursorUp(InputAction.CallbackContext context)
     {
+        _holdingCursorUp = true;
         if (_disableInputs)
             return;
         MoveCursorUp();
+        _cursorYMoveCooldown = ButtonCursorMoveInitCooldown;
+    }
+
+    private void OnMoveCursorUpEnd(InputAction.CallbackContext context)
+    {
+        _holdingCursorUp = false;
     }
 
     private void OnMoveCursorDown(InputAction.CallbackContext context)
     {
+        _holdingCursorDown = true;
         if (_disableInputs)
             return;
         MoveCursorDown();
+        _cursorYMoveCooldown = ButtonCursorMoveInitCooldown;
+    }
+
+    private void OnMoveCursorDownEnd(InputAction.CallbackContext context)
+    {
+        _holdingCursorDown = false;
     }
 
     private void OnTileNext(InputAction.CallbackContext context)
