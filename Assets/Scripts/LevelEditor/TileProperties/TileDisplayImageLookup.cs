@@ -1,16 +1,17 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PropertyUiLookup : MonoBehaviour
+public class TileDisplayImageLookup : MonoBehaviour
 {
     [SerializeField]
-    private TileLookup[] _lookup;
+    private BlockImageLookup[] _lookup;
 
-    private Dictionary<TileType, GameObject> _dictLookup;
+    private Dictionary<TileType, Sprite> _dictLookup;
 
     private void Start()
     {
-        _dictLookup = new Dictionary<TileType, GameObject>();
+        _dictLookup = new Dictionary<TileType, Sprite>();
 
         for (var i = 0; i < _lookup.Length; i++)
         {
@@ -18,12 +19,19 @@ public class PropertyUiLookup : MonoBehaviour
             if (_dictLookup.ContainsKey(lookup.Type))
                 Debug.LogWarning($"More than one property prefab mapping found for BlockType '{lookup.Type}'! Only mapping the first prefab listed!");
             else
-                _dictLookup.Add(lookup.Type, lookup.Prefab);
+                _dictLookup.Add(lookup.Type, lookup.Image);
         }
     }
 
-    public GameObject GetPropertyUiPrefab(TileType type)
+    public Sprite GetBlockDisplayImage(TileType type)
     {
         return _dictLookup.ContainsKey(type) ? _dictLookup[type] : null;
     }
+}
+
+[Serializable]
+public class BlockImageLookup
+{
+    public TileType Type;
+    public Sprite Image;
 }

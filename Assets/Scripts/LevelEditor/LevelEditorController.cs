@@ -9,6 +9,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class LevelEditorController : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class LevelEditorController : MonoBehaviour
     private int _tileSize = 1;
     [SerializeField]
     private TMP_Text _currentBlockDisplayText;
+    [SerializeField]
+    private Image _currentBlockDisplayImage;
     [SerializeField]
     private TilePrefabLookup _lookup;
     [SerializeField]
@@ -40,6 +43,8 @@ public class LevelEditorController : MonoBehaviour
     private GameObject _tilePropertiesCustomContainer;
     [SerializeField]
     private PropertyUiLookup _propertyUiLookup;
+    [SerializeField]
+    private TileDisplayImageLookup _tileDisplayImageLookup;
 
 
     private const float HorizontalMouseSensitivity = 1.0f;
@@ -451,6 +456,8 @@ public class LevelEditorController : MonoBehaviour
     private void UpdateBlockTypeDisplay()
     {
         _currentBlockDisplayText.text = $"Current Tile: {_currentBlockType}";
+        var newSprite = _tileDisplayImageLookup.GetBlockDisplayImage(_currentBlockType);
+        _currentBlockDisplayImage.sprite = newSprite;
     }
 
     // TODO: Make this work for joystick better (handle in update loop)!
