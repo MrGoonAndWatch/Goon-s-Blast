@@ -434,6 +434,24 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DisableMouseMove"",
+                    ""type"": ""Button"",
+                    ""id"": ""883fa8ae-9206-4e5c-9366-bbaaa65bd496"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MouseWheelMove"",
+                    ""type"": ""Value"",
+                    ""id"": ""26a8b5b8-03f5-4691-a956-71bd61ad2a7a"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -711,6 +729,28 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""MouseRotateCameraClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""39b27048-7a6d-4ca6-b25f-1c793630c32f"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DisableMouseMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""21e2142a-cf18-4f92-a5c5-994f63647d79"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MouseWheelMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -892,6 +932,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Editor_MouseRotateCameraClick = m_Editor.FindAction("MouseRotateCameraClick", throwIfNotFound: true);
         m_Editor_MouseRotateCameraDrag = m_Editor.FindAction("MouseRotateCameraDrag", throwIfNotFound: true);
         m_Editor_PropertiesMenu = m_Editor.FindAction("PropertiesMenu", throwIfNotFound: true);
+        m_Editor_DisableMouseMove = m_Editor.FindAction("DisableMouseMove", throwIfNotFound: true);
+        m_Editor_MouseWheelMove = m_Editor.FindAction("MouseWheelMove", throwIfNotFound: true);
         // Editor-SaveMenu
         m_EditorSaveMenu = asset.FindActionMap("Editor-SaveMenu", throwIfNotFound: true);
         m_EditorSaveMenu_Confirm = m_EditorSaveMenu.FindAction("Confirm", throwIfNotFound: true);
@@ -1057,6 +1099,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Editor_MouseRotateCameraClick;
     private readonly InputAction m_Editor_MouseRotateCameraDrag;
     private readonly InputAction m_Editor_PropertiesMenu;
+    private readonly InputAction m_Editor_DisableMouseMove;
+    private readonly InputAction m_Editor_MouseWheelMove;
     public struct EditorActions
     {
         private @PlayerControls m_Wrapper;
@@ -1073,6 +1117,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @MouseRotateCameraClick => m_Wrapper.m_Editor_MouseRotateCameraClick;
         public InputAction @MouseRotateCameraDrag => m_Wrapper.m_Editor_MouseRotateCameraDrag;
         public InputAction @PropertiesMenu => m_Wrapper.m_Editor_PropertiesMenu;
+        public InputAction @DisableMouseMove => m_Wrapper.m_Editor_DisableMouseMove;
+        public InputAction @MouseWheelMove => m_Wrapper.m_Editor_MouseWheelMove;
         public InputActionMap Get() { return m_Wrapper.m_Editor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1118,6 +1164,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @PropertiesMenu.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
                 @PropertiesMenu.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
                 @PropertiesMenu.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnPropertiesMenu;
+                @DisableMouseMove.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnDisableMouseMove;
+                @DisableMouseMove.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnDisableMouseMove;
+                @DisableMouseMove.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnDisableMouseMove;
+                @MouseWheelMove.started -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
+                @MouseWheelMove.performed -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
+                @MouseWheelMove.canceled -= m_Wrapper.m_EditorActionsCallbackInterface.OnMouseWheelMove;
             }
             m_Wrapper.m_EditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -1158,6 +1210,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @PropertiesMenu.started += instance.OnPropertiesMenu;
                 @PropertiesMenu.performed += instance.OnPropertiesMenu;
                 @PropertiesMenu.canceled += instance.OnPropertiesMenu;
+                @DisableMouseMove.started += instance.OnDisableMouseMove;
+                @DisableMouseMove.performed += instance.OnDisableMouseMove;
+                @DisableMouseMove.canceled += instance.OnDisableMouseMove;
+                @MouseWheelMove.started += instance.OnMouseWheelMove;
+                @MouseWheelMove.performed += instance.OnMouseWheelMove;
+                @MouseWheelMove.canceled += instance.OnMouseWheelMove;
             }
         }
     }
@@ -1254,6 +1312,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnMouseRotateCameraClick(InputAction.CallbackContext context);
         void OnMouseRotateCameraDrag(InputAction.CallbackContext context);
         void OnPropertiesMenu(InputAction.CallbackContext context);
+        void OnDisableMouseMove(InputAction.CallbackContext context);
+        void OnMouseWheelMove(InputAction.CallbackContext context);
     }
     public interface IEditorSaveMenuActions
     {

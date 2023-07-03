@@ -412,6 +412,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "DisableMouseMove",
+                    "type": "Button",
+                    "id": "883fa8ae-9206-4e5c-9366-bbaaa65bd496",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseWheelMove",
+                    "type": "Value",
+                    "id": "26a8b5b8-03f5-4691-a956-71bd61ad2a7a",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -687,6 +705,28 @@
                     "processors": "",
                     "groups": "KeyboardMouse",
                     "action": "MouseRotateCameraClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "39b27048-7a6d-4ca6-b25f-1c793630c32f",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DisableMouseMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "21e2142a-cf18-4f92-a5c5-994f63647d79",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MouseWheelMove",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

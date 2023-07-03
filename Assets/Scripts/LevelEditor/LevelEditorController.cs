@@ -46,7 +46,10 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField]
     private TileDisplayImageLookup _tileDisplayImageLookup;
 
-
+    private const float MouseMoveCursorDeadzone = 5;
+    private const float ControllerCursorMoveDeadzone = 0.75f;
+    private const float MouseCursorMoveCooldown = 0.01f;
+    private const float ButtonCursorMoveCooldown = 0.05f;
     private const float HorizontalMouseSensitivity = 1.0f;
     private const float VerticalMouseSensitivity = 1.0f;
     private float _verticalLookRotation;
@@ -63,12 +66,18 @@ public class LevelEditorController : MonoBehaviour
     private InputAction _saveLevel;
     private InputAction _minimizeUi;
     private InputAction _propertiesMenu;
+    private InputAction _disableMouseMove;
+    private InputAction _mouseWheelScroll;
 
     private bool _disableInputs;
     private bool _propertyMenuOpened;
     private bool _movingHorizontally;
     private bool _movingVertically;
     private bool _placingTiles;
+    private bool _mouseMoveDisabled;
+    private float _cursorXZMoveCooldown;
+    private float _cursorYMoveCooldown;
+    private bool _movingMouse;
 
     private LevelData _levelData;
     private List<LevelEditorTile> _generatedTiles;
@@ -79,6 +88,7 @@ public class LevelEditorController : MonoBehaviour
     private TileType _currentBlockType;
     private bool _minimized = true;
 
+    private Vector2 _currentMouseDrag;
     private Vector2 _rotateCameraInput;
     private bool _rotatingCamera;
     private bool _holdingRotateMouseButton;
@@ -104,6 +114,8 @@ public class LevelEditorController : MonoBehaviour
         _mouseRotateCameraClick = _editorControls.Editor.MouseRotateCameraClick;
         _mouseRotateCameraDrag = _editorControls.Editor.MouseRotateCameraDrag;
         _propertiesMenu = _editorControls.Editor.PropertiesMenu;
+        _disableMouseMove = _editorControls.Editor.DisableMouseMove;
+        _mouseWheelScroll = _editorControls.Editor.MouseWheelMove;
 
         _moveXZ.Enable();
         _moveUp.Enable();
@@ -117,6 +129,8 @@ public class LevelEditorController : MonoBehaviour
         _mouseRotateCameraClick.Enable();
         _mouseRotateCameraDrag.Enable();
         _propertiesMenu.Enable();
+        _disableMouseMove.Enable();
+        _mouseWheelScroll.Enable();
 
         _moveXZ.performed += OnMoveCursor;
         _moveXZ.canceled += OnStopMovingCursor;
@@ -133,8 +147,10 @@ public class LevelEditorController : MonoBehaviour
         _mouseRotateCameraClick.performed += OnMouseCameraClickStart;
         _mouseRotateCameraClick.canceled += OnMouseCameraClickEnd;
         _mouseRotateCameraDrag.performed += OnRotateCameraMouse;
-        _mouseRotateCameraDrag.canceled += OnRotateCameraEnd;
+        _mouseRotateCameraDrag.canceled += OnMouseMoveEnd;
         _propertiesMenu.performed += OnPropertiesMenu;
+        _disableMouseMove.performed += OnDisableMouseMove;
+        _mouseWheelScroll.performed += OnMouseWheelScrolled;
     }
 
     void OnDisable()
@@ -151,6 +167,8 @@ public class LevelEditorController : MonoBehaviour
         _mouseRotateCameraClick.Disable();
         _mouseRotateCameraDrag.Disable();
         _propertiesMenu.Disable();
+        _disableMouseMove.Disable();
+        _mouseWheelScroll.Disable();
     }
 
     private void Start()
@@ -196,10 +214,16 @@ public class LevelEditorController : MonoBehaviour
 
     private void Update()
     {
+        if (_cursorXZMoveCooldown > 0)
+            _cursorXZMoveCooldown -= Time.deltaTime;
+        if (_cursorYMoveCooldown > 0)
+            _cursorYMoveCooldown -= Time.deltaTime;
+
         if(_rotatingCamera)
             HandleRotateCamera();
         FollowCursorWithCamera();
         HandleBlockPlacement();
+        MoveCursorByMouse();
     }
 
     public LevelData GetLevelData()
@@ -254,13 +278,22 @@ public class LevelEditorController : MonoBehaviour
 
     private void OnRotateCameraMouse(InputAction.CallbackContext context)
     {
-        if(_holdingRotateMouseButton) OnRotateCamera(context);
+        _movingMouse = true;
+        _currentMouseDrag = context.ReadValue<Vector2>();
+        if (_holdingRotateMouseButton) OnRotateCamera(context);
     }
 
     private void OnRotateCamera(InputAction.CallbackContext context)
     {
         _rotateCameraInput = context.ReadValue<Vector2>();
         _rotatingCamera = true;
+    }
+
+    private void OnMouseMoveEnd(InputAction.CallbackContext context)
+    {
+        Debug.Log("OnMouseMoveEnd");
+        _movingMouse = false;
+        _rotatingCamera = false;
     }
 
     private void OnRotateCameraEnd(InputAction.CallbackContext context)
@@ -288,6 +321,25 @@ public class LevelEditorController : MonoBehaviour
         _propertyMenuOpened = true;
         BuildPropertyUi(customPropertiesPrefab, currentTile);
         _tilePropertiesUi.SetActive(true);
+    }
+
+    private void OnDisableMouseMove(InputAction.CallbackContext context)
+    {
+        if (_disableInputs) return;
+
+        _mouseMoveDisabled = !_mouseMoveDisabled;
+    }
+
+    private void OnMouseWheelScrolled(InputAction.CallbackContext context)
+    {
+        if (_disableInputs) return;
+
+        var scrollValue = context.ReadValue<Vector2>();
+
+        if(scrollValue.y > 0)
+            MoveCursorUp();
+        else if(scrollValue.y < 0)
+            MoveCursorDown();
     }
 
     public void OnClosePropertyMenu()
@@ -473,6 +525,37 @@ public class LevelEditorController : MonoBehaviour
         _currentBlockDisplayImage.sprite = newSprite;
     }
 
+    private void MoveCursorByMouse()
+    {
+        if (_disableInputs || _mouseMoveDisabled || _cursorXZMoveCooldown > 0) return;
+
+        var moved = false;
+        if (_currentMouseDrag.x >= MouseMoveCursorDeadzone)
+        {
+            MoveCursorRight();
+            moved = true;
+        }
+        else if (_currentMouseDrag.x <= -MouseMoveCursorDeadzone)
+        {
+            MoveCursorLeft();
+            moved = true;
+        }
+
+        if (_currentMouseDrag.y >= MouseMoveCursorDeadzone)
+        {
+            MoveCursorForwards();
+            moved = true;
+        }
+        else if (_currentMouseDrag.y <= -MouseMoveCursorDeadzone)
+        {
+            MoveCursorBackwards();
+            moved = true;
+        }
+
+        if (moved)
+            _cursorXZMoveCooldown = MouseCursorMoveCooldown;
+    }
+
     // TODO: Make this work for joystick better (handle in update loop)!
     private void OnMoveCursor(InputAction.CallbackContext context)
     {
@@ -482,13 +565,13 @@ public class LevelEditorController : MonoBehaviour
         var moveDir = context.ReadValue<Vector2>();
 
         // TODO: Would be nice to use proper deadzone processors but they don't seem to work (everything comes through).
-        if (moveDir.x >= 0.75 && !_movingHorizontally)
+        if (moveDir.x >= ControllerCursorMoveDeadzone && !_movingHorizontally)
             MoveCursorRight();
-        else if (moveDir.x <= -0.75 && !_movingHorizontally)
+        else if (moveDir.x <= -ControllerCursorMoveDeadzone && !_movingHorizontally)
             MoveCursorLeft();
-        if (moveDir.y >= 0.75 && !_movingVertically)
+        if (moveDir.y >= ControllerCursorMoveDeadzone && !_movingVertically)
             MoveCursorForwards();
-        else if (moveDir.y <= -0.75 && !_movingVertically)
+        else if (moveDir.y <= -ControllerCursorMoveDeadzone && !_movingVertically)
             MoveCursorBackwards();
     }
 
