@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private PlayerPickUpRadius _playerPickUpRadius;
 
+    [SerializeField] private PlayerAnimationManager _playerAnimationManager;
+
     private const float DeathPlane = -30.0f;
 
     private float _verticalLookRotation;
@@ -94,7 +96,6 @@ public class PlayerController : MonoBehaviour
         _run.performed += OnRun;
         _run.canceled += OnRunEnd;
         _pickUp.performed += OnPickUp;
-        _pickUp.canceled += OnPickUpEnd;
     }
 
     private void OnDisable()
@@ -171,7 +172,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || !_grounded || _inRagdoll) return;
+        if (_matchEnded || _dead || !_grounded || _inRagdoll || !_playerAnimationManager.CanMove()) return;
         _rigidbody.AddForce(transform.up * _jumpForce);
     }
 
@@ -224,17 +225,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnPickUp(InputAction.CallbackContext context)
     {
-        if (_playerPickUpRadius.CanPickUpSomething())
-        {
-            Debug.Log("Picking something up!");
-            _isHoldingSomething = true;
-            _heldItem = _playerPickUpRadius.GetItemForPickup();
-            _heldItem.Pickup(this);
-        }
-    }
-
-    private void OnPickUpEnd(InputAction.CallbackContext context)
-    {
         if (_isHoldingSomething)
         {
             if (_moveAmount.x != 0 || _moveAmount.z != 0 || _rigidbody.velocity.y != 0)
@@ -247,6 +237,28 @@ public class PlayerController : MonoBehaviour
                 _heldItem.Drop();
             _heldItem = null;
             _isHoldingSomething = false;
+        }
+        else 
+            _photonView.RPC(nameof(StartPickUp), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void StartPickUp()
+    {
+        // TODO: Determine if we should have separate logic to force start this animation on non-owners when calling this.
+        _playerAnimationManager.StartPickUp();
+    }
+
+    public void TryToPickUp()
+    {
+        if (!_photonView.IsMine) return;
+
+        if (_playerPickUpRadius.CanPickUpSomething())
+        {
+            Debug.Log("Picking something up!");
+            _isHoldingSomething = true;
+            _heldItem = _playerPickUpRadius.GetItemForPickup();
+            _heldItem.Pickup(this);
         }
     }
 
@@ -311,7 +323,7 @@ public class PlayerController : MonoBehaviour
     
     private void FixedUpdate()
     {
-        if (!_photonView.IsMine || _matchEnded || _inRagdoll)
+        if (!_photonView.IsMine || _matchEnded || _inRagdoll || !_playerAnimationManager.CanMove())
             return;
         _rigidbody.MovePosition(_rigidbody.position + transform.TransformDirection(_moveAmount) * Time.fixedDeltaTime);
         //transform.position += transform.TransformDirection(_moveAmount) * Time.fixedDeltaTime;

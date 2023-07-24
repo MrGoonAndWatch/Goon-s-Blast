@@ -119,5 +119,10 @@ namespace Assets.Scripts.Constants
             public static string VsLevelResourceFolderPath = $"{BaseLevelPath}/Versus";
             public static string LevelListFilePath = $"{BaseLevelPath}/LevelList";
         }
+
+        public static class AnimationVariables
+        {
+            public const string PickingUp = "PickingUp";
+        }
     }
 }
