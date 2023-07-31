@@ -123,6 +123,7 @@ namespace Assets.Scripts.Constants
         public static class AnimationVariables
         {
             public const string PickingUp = "PickingUp";
+            public const string PlacingBomb = "PlacingBomb";
         }
     }
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class PlayerAnimationEventHook : MonoBehaviour
@@ -8,15 +7,23 @@ public class PlayerAnimationEventHook : MonoBehaviour
     [SerializeField]
     private PlayerController _playerController;
 
-    public IEnumerator PickUpObject()
+    public void PickUpObject()
     {
         _playerController.TryToPickUp();
-        yield return null;
     }
 
-    public IEnumerator OnPickUpEnd()
+    public void OnPickUpEnd()
     {
         _animationManager.OnPickupEnd();
-        yield return null;
+    }
+
+    public void PlaceBomb()
+    {
+        _playerController.PlaceBomb();
+    }
+
+    public void OnPlaceBombEnd()
+    {
+        _animationManager.OnPlacingBombEnd();
     }
 }

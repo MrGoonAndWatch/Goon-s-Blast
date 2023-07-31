@@ -178,8 +178,23 @@ public class PlayerController : MonoBehaviour
 
     private void OnLayBomb(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll) return;
-        // TODO: Start animation instead of immediately placing bomb.
+        if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll || _isHoldingSomething) return;
+
+        _photonView.RPC(nameof(StartPlacingBomb), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void StartPlacingBomb()
+    {
+        _playerAnimationManager.StartPlacingBomb();
+    }
+
+    public void PlaceBomb()
+    {
+        if (!_photonView.IsMine) return;
+
+        // TODO: should we check the bomb count again here in case max bombs decreased or player otherwise suddenly can't actually place a bomb?
+
         // TODO: use reference from player model's dir instead of this script's obj's forward!
         var spawnPos = transform.position + (_bombSpawnDistance * new Vector3(transform.forward.x, 0, transform.forward.z));
         var bombObject = _remoteBombs ?
