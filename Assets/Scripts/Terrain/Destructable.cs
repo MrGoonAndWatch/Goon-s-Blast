@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class Destructable : TileWithProperties
 {
+    [SerializeField]
+    private Animator _animationController;
+
     private DestructibleBlockProperties _properties;
 
     private bool _initialized;
     private PowerupSpawner _powerupSpawner;
-    
+
     public void SetPowerupSpawner(PowerupSpawner spawner)
     {
         _powerupSpawner = spawner;
@@ -33,11 +36,13 @@ public class Destructable : TileWithProperties
             Contents = GameConstants.DestructableContents.Nothing,
             SpawnPowerupChance = 0,
         };
+        UpdateAnimator();
     }
 
     public override void LoadProperties(string propertyJson)
     {
         _properties = LoadProperties<DestructibleBlockProperties>(propertyJson);
+        UpdateAnimator();
     }
 
     public GameConstants.DestructableContents GetContents()
@@ -48,5 +53,13 @@ public class Destructable : TileWithProperties
     public float GetSpawnChance()
     {
         return _properties.SpawnPowerupChance;
+    }
+
+    private void UpdateAnimator()
+    {
+        if (_properties.Contents != GameConstants.DestructableContents.Nothing)
+        {
+            _animationController.SetBool(GameConstants.AnimationVariables.DestructibleBlockHasItem, true);
+        }
     }
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2033817167373790780}
   - component: {fileID: 2033817167373790771}
   - component: {fileID: 2033817167373790783}
+  - component: {fileID: 6356086529526149154}
   m_Layer: 0
   m_Name: Block-Destructable
   m_TagString: Untagged
@@ -110,3 +111,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4374e92d00d61294fa83615b2bedbe34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animationController: {fileID: 6356086529526149154}
+--- !u!95 &6356086529526149154
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033817167373790770}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 074d32b322160e345ba04192d2059e52, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
