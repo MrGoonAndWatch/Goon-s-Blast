@@ -57,6 +57,7 @@ public class PlayerController : MonoBehaviour
     private bool _movingCamera;
     private Vector2 _moveCameraInput;
     private bool _isRunning;
+    private bool _holdingPickUp;
 
     private int _killCount;
 
@@ -96,6 +97,7 @@ public class PlayerController : MonoBehaviour
         _run.performed += OnRun;
         _run.canceled += OnRunEnd;
         _pickUp.performed += OnPickUp;
+        _pickUp.canceled += OnPickUpEnd;
     }
 
     private void OnDisable()
@@ -180,7 +182,16 @@ public class PlayerController : MonoBehaviour
     {
         if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll || _isHoldingSomething) return;
 
-        _photonView.RPC(nameof(StartPlacingBomb), RpcTarget.All);
+        if(_holdingPickUp)
+            _photonView.RPC(nameof(StartSpawningBombInHands), RpcTarget.All);
+        else
+            _photonView.RPC(nameof(StartPlacingBomb), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void StartSpawningBombInHands()
+    {
+        _playerAnimationManager.StartSpawnHeldBomb();
     }
 
     [PunRPC]
@@ -189,7 +200,7 @@ public class PlayerController : MonoBehaviour
         _playerAnimationManager.StartPlacingBomb();
     }
 
-    public void PlaceBomb()
+    public void PlaceBomb(bool holding)
     {
         if (!_photonView.IsMine) return;
 
@@ -212,6 +223,9 @@ public class PlayerController : MonoBehaviour
         }
         bombObject.Initialize(this, _currentFirepower, nextBombNumber);
         _availableBombs--;
+
+        if (holding)
+            PickUpItem(bombObject);
     }
 
     private void OnDetonate(InputAction.CallbackContext context)
@@ -253,8 +267,16 @@ public class PlayerController : MonoBehaviour
             _heldItem = null;
             _isHoldingSomething = false;
         }
-        else 
+        else
+        {
+            _holdingPickUp = true;
             _photonView.RPC(nameof(StartPickUp), RpcTarget.All);
+        }
+    }
+
+    private void OnPickUpEnd(InputAction.CallbackContext context)
+    {
+        _holdingPickUp = false;
     }
 
     [PunRPC]
@@ -262,6 +284,13 @@ public class PlayerController : MonoBehaviour
     {
         // TODO: Determine if we should have separate logic to force start this animation on non-owners when calling this.
         _playerAnimationManager.StartPickUp();
+    }
+
+    public void PickUpItem(Bomb item)
+    {
+        _isHoldingSomething = true;
+        _heldItem = item;
+        _heldItem.Pickup(this);
     }
 
     public void TryToPickUp()

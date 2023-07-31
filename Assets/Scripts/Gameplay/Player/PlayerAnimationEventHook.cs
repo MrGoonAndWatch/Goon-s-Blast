@@ -19,11 +19,21 @@ public class PlayerAnimationEventHook : MonoBehaviour
 
     public void PlaceBomb()
     {
-        _playerController.PlaceBomb();
+        _playerController.PlaceBomb(false);
     }
 
     public void OnPlaceBombEnd()
     {
         _animationManager.OnPlacingBombEnd();
+    }
+
+    public void SpawnHeldBomb()
+    {
+        _playerController.PlaceBomb(true);
+    }
+
+    public void OnSpawnHeldBombEnd()
+    {
+        _animationManager.OnSpawnHeldBombEnd();
     }
 }

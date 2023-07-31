@@ -124,6 +124,7 @@ namespace Assets.Scripts.Constants
         {
             public const string PickingUp = "PickingUp";
             public const string PlacingBomb = "PlacingBomb";
+            public const string SpawningHeldBomb = "SpawningHeldBomb";
         }
     }
 }

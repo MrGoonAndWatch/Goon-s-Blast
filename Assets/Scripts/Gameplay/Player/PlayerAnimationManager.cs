@@ -6,49 +6,59 @@ public class PlayerAnimationManager : MonoBehaviour
     [SerializeField]
     private Animator _animationController;
 
-    private bool _isPickingUp;
-    private bool _isPlacingBomb;
+    private bool _isBusy;
 
     public bool CanMove()
     {
-        return !_isPickingUp && !_isPlacingBomb;
-    }
-
-    public bool CanPickUp()
-    {
-        return !_isPickingUp && !_isPlacingBomb;
+        return !_isBusy;
     }
 
     public bool IsBusy()
     {
-        return _isPickingUp || _isPlacingBomb;
+        return _isBusy;
     }
 
     public void StartPickUp()
     {
-        if (IsBusy()) return;
-
-        _isPickingUp = true;
-        _animationController.SetBool(GameConstants.AnimationVariables.PickingUp, true);
+        TryStartAnimation(GameConstants.AnimationVariables.PickingUp);
     }
 
     public void OnPickupEnd()
     {
-        _animationController.SetBool(GameConstants.AnimationVariables.PickingUp, false);
-        _isPickingUp = false;
+        OnAnimationEnd(GameConstants.AnimationVariables.PickingUp);
     }
 
     public void StartPlacingBomb()
     {
-        if (IsBusy()) return;
-
-        _isPlacingBomb = true;
-        _animationController.SetBool(GameConstants.AnimationVariables.PlacingBomb, true);
+        TryStartAnimation(GameConstants.AnimationVariables.PlacingBomb);
     }
 
     public void OnPlacingBombEnd()
     {
-        _animationController.SetBool(GameConstants.AnimationVariables.PlacingBomb, false);
-        _isPlacingBomb = false;
+        OnAnimationEnd(GameConstants.AnimationVariables.PlacingBomb);
+    }
+
+    public void StartSpawnHeldBomb()
+    {
+        TryStartAnimation(GameConstants.AnimationVariables.SpawningHeldBomb);
+    }
+
+    public void OnSpawnHeldBombEnd()
+    {
+        OnAnimationEnd(GameConstants.AnimationVariables.SpawningHeldBomb);
+    }
+
+    private void TryStartAnimation(string animationVarName)
+    {
+        if (IsBusy()) return;
+
+        _isBusy = true;
+        _animationController.SetBool(animationVarName, true);
+    }
+
+    private void OnAnimationEnd(string animationVarName)
+    {
+        _animationController.SetBool(animationVarName, false);
+        _isBusy = false;
     }
 }
