@@ -128,5 +128,11 @@ namespace Assets.Scripts.Constants
 
             public const string DestructibleBlockHasItem = "HasItemInside";
         }
+
+        public static class RoomCustomProperties
+        {
+            public const string MatchSettings = "s";
+            public const string MatchMap = "m";
+        }
     }
 }

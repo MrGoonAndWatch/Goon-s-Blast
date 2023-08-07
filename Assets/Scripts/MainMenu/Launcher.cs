@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Assets.Scripts.Constants;
+using ExitGames.Client.Photon;
 using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
@@ -111,13 +112,23 @@ namespace Assets.Scripts.MainMenu
                 return;
             }
 
-            if (string.IsNullOrEmpty(RoomManager.GetMap()))
+            var selectedMap = RoomManager.GetMap();
+            if (string.IsNullOrEmpty(selectedMap))
             {
                 Debug.Log("No map selected! Not creating room!");
                 return;
             }
             MenuManager.Instance.OpenMenu(MenuType.Loading);
-            PhotonNetwork.CreateRoom(_roomNameInputField.text);
+            
+            var options = new RoomOptions();
+            var customProps = new ExitGames.Client.Photon.Hashtable();
+            var matchSettingsJson = JsonConvert.SerializeObject(RoomManager.GetMatchSettings(), Formatting.None);
+            customProps.Add(GameConstants.RoomCustomProperties.MatchSettings, matchSettingsJson);
+            var matchMap = Path.GetFileName(selectedMap);
+            customProps.Add(GameConstants.RoomCustomProperties.MatchMap, matchMap);
+            options.CustomRoomProperties = customProps;
+            options.CustomRoomPropertiesForLobby = new[] {GameConstants.RoomCustomProperties.MatchSettings, GameConstants.RoomCustomProperties.MatchMap};
+            PhotonNetwork.CreateRoom(_roomNameInputField.text, options);
         }
 
         // Also called on create room, but OnJoinedRoom is called in both cases.
