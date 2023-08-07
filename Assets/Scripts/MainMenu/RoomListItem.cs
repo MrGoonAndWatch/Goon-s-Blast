@@ -35,7 +35,7 @@ namespace Assets.Scripts.MainMenu
                 {
                     _gameModeText.text = matchSettings.MatchType.ToString();
                     _timerSettingsText.text = matchSettings.TimerSeconds > 0
-                        ? TimeSpan.FromSeconds(matchSettings.TimerSeconds).ToString("g")
+                        ? TimeSpan.FromSeconds(matchSettings.TimerSeconds).ToString(@"mm\:ss")
                         : "(no limit)";
                 }
             }

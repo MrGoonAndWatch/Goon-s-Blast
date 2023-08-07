@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Assets.Scripts.Constants;
-using ExitGames.Client.Photon;
 using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
@@ -47,6 +46,7 @@ namespace Assets.Scripts.MainMenu
         [SerializeField] private Toggle _runBombTimerWhenHeldToggle;
         [SerializeField] private Toggle _detonateBombsWhenHeldToggle;
         [SerializeField] private TMP_Dropdown _matchSongPicker;
+        [SerializeField] private Slider _maxPlayers;
 
         private GameConstants.OfficialLevelList _officialLevelList;
         private List<string> _customVsLevels;
@@ -72,6 +72,7 @@ namespace Assets.Scripts.MainMenu
             // Connects to Photon master server using /Photon/PhotonUnityNetworking/Resources/PhotonServerSettings
             PhotonNetwork.ConnectUsingSettings();
             StartCoroutine(StartRefreshLevelList());
+            ReadMatchSettings();
         }
 
         private void LoadConfigSettings()
@@ -122,12 +123,14 @@ namespace Assets.Scripts.MainMenu
             
             var options = new RoomOptions();
             var customProps = new ExitGames.Client.Photon.Hashtable();
-            var matchSettingsJson = JsonConvert.SerializeObject(RoomManager.GetMatchSettings(), Formatting.None);
+            var matchSettings = RoomManager.GetMatchSettings();
+            var matchSettingsJson = JsonConvert.SerializeObject(matchSettings, Formatting.None);
             customProps.Add(GameConstants.RoomCustomProperties.MatchSettings, matchSettingsJson);
             var matchMap = Path.GetFileName(selectedMap);
             customProps.Add(GameConstants.RoomCustomProperties.MatchMap, matchMap);
             options.CustomRoomProperties = customProps;
             options.CustomRoomPropertiesForLobby = new[] {GameConstants.RoomCustomProperties.MatchSettings, GameConstants.RoomCustomProperties.MatchMap};
+            options.MaxPlayers = matchSettings.MaxPlayers;
             PhotonNetwork.CreateRoom(_roomNameInputField.text, options);
         }
 
@@ -343,20 +346,25 @@ namespace Assets.Scripts.MainMenu
 
         public void OnMatchConfigSaved()
         {
+            ReadMatchSettings();
+            MenuManager.Instance.OpenMenu(MenuType.CreateRoom);
+        }
+
+        private void ReadMatchSettings()
+        {
             var newSettings = new GameConstants.MatchSettings
             {
-                MatchType = (GameConstants.GameMatchType) _matchTypePicker.value,
-                TimerSeconds = (int) _matchTimer.value,
-                KillsToWin = (int) _killsToWin.value,
-                SuddenDeathType = (GameConstants.SuddenDeathType) _suddenDeathPicker.value,
+                MatchType = (GameConstants.GameMatchType)_matchTypePicker.value,
+                TimerSeconds = (int)_matchTimer.value,
+                KillsToWin = (int)_killsToWin.value,
+                SuddenDeathType = (GameConstants.SuddenDeathType)_suddenDeathPicker.value,
                 SuddenDeathStartsAt = (int)_suddenDeathTimer.value,
                 RunBombTimerWhenHeld = _runBombTimerWhenHeldToggle.isOn,
                 AllowDetonationsWhenHeld = _detonateBombsWhenHeldToggle.isOn,
-                SongNumber = _matchSongPicker.value
+                SongNumber = _matchSongPicker.value,
+                MaxPlayers = (byte)_maxPlayers.value
             };
             RoomManager.SaveMatchSettings(newSettings);
-
-            MenuManager.Instance.OpenMenu(MenuType.CreateRoom);
         }
 
         public void OnMatchConfigCancelled()
@@ -365,6 +373,7 @@ namespace Assets.Scripts.MainMenu
             _matchTypePicker.value = (int) oldMatchSettings.MatchType;
             _matchTimer.value = oldMatchSettings.TimerSeconds;
             _killsToWin.value = oldMatchSettings.KillsToWin;
+            _maxPlayers.value = oldMatchSettings.MaxPlayers;
 
             MenuManager.Instance.OpenMenu(MenuType.CreateRoom);
         }

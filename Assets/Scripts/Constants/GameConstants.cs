@@ -105,6 +105,7 @@ namespace Assets.Scripts.Constants
             public bool RunBombTimerWhenHeld { get; set; }
             public bool AllowDetonationsWhenHeld { get; set; }
             public int SongNumber { get; set; }
+            public byte MaxPlayers { get; set; }
         }
 
         public const string ConfigSettingsFilename = "goonsblast.settings";
