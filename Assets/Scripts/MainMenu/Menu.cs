@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Assets.Scripts.MainMenu
 {
@@ -7,10 +8,15 @@ namespace Assets.Scripts.MainMenu
         public MenuType MenuType;
         [HideInInspector] public bool Opened;
 
+        [SerializeField] private EventSystem _eventSystem;
+        [SerializeField] private GameObject _selectOnOpen;
+
         public void Open()
         {
             Opened = true;
             gameObject.SetActive(true);
+            
+            _eventSystem.SetSelectedGameObject(_selectOnOpen);
         }
 
         public void Close()
