@@ -190,11 +190,6 @@ namespace Assets.Scripts.MainMenu
             Application.Quit();
         }
 
-        public void OnFindRooms()
-        {
-            PhotonNetwork.GetCustomRoomList(TypedLobby.Default, "");
-        }
-
         public override void OnRoomListUpdate(List<RoomInfo> roomList)
         {
             for (var i = _roomListContent.childCount - 1; i >= 0; i--)
