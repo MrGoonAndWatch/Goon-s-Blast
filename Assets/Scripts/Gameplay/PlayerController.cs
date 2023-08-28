@@ -208,9 +208,7 @@ public class PlayerController : MonoBehaviour
 
         // TODO: use reference from player model's dir instead of this script's obj's forward!
         var spawnPos = transform.position + (_bombSpawnDistance * new Vector3(transform.forward.x, 0, transform.forward.z));
-        var bombObject = _remoteBombs ?
-            PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.RemoteBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>() :
-            PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.BasicBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>();
+        var bombObject = PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.BasicBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>();
         _bombs.Add(bombObject);
         var nextBombNumber = 0;
         for (var i = 0; i < _bombs.Count; i++)
@@ -221,7 +219,7 @@ public class PlayerController : MonoBehaviour
                 break;
             }
         }
-        bombObject.Initialize(this, _currentFirepower, nextBombNumber);
+        bombObject.Initialize(this, _currentFirepower, nextBombNumber, _remoteBombs);
         _availableBombs--;
 
         if (holding)
@@ -234,7 +232,7 @@ public class PlayerController : MonoBehaviour
 
         for (var i = 0; i < _bombs.Count; i++)
         {
-            if (_bombs[i] is RemoteBomb && (RoomManager.GetMatchSettings().AllowDetonationsWhenHeld || !_bombs[i].IsHeld()))
+            if (_bombs[i].IsRemote() && (RoomManager.GetMatchSettings().AllowDetonationsWhenHeld || !_bombs[i].IsHeld()))
             {
                 _bombs[i].Explode();
                 return;

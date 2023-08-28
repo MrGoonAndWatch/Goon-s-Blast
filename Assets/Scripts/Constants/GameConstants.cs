@@ -66,7 +66,6 @@ namespace Assets.Scripts.Constants
             public const string CannonBall = "SuddenDeath/CannonBall";
 
             public const string BasicBomb = "Bombs/Bomb-Basic";
-            public const string RemoteBomb = "Bombs/Bomb-Remote";
 
             public const string PowerupFireUp = "Powerups/Pickup-FireUp";
             public const string PowerupBombUp = "Powerups/Pickup-BombUp";

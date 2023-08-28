@@ -8,7 +8,9 @@ public abstract class Bomb : MonoBehaviour
     [SerializeField] private GameObject _explosionMesh;
     [SerializeField] private float _baseExplosionEndSize = 3.0f;
     [SerializeField] private float _explosionIncreaseRatePerSec = 0.5f;
-    
+    [SerializeField] private GameObject _fuseMesh;
+    [SerializeField] private GameObject _remoteMesh;
+
     private const float HeldDistanceInFrontOfPlayer = 1.5f;
     private const float HeldDistanceAbovePlayerCenter = 1.0f;
 
@@ -36,6 +38,11 @@ public abstract class Bomb : MonoBehaviour
     [SerializeField]
     private Rigidbody _bombRigidBody;
 
+    // TODO: Could break this out in to a whole 'fuse' system that handles all the logic for detonation instead.
+    protected bool _isRemoteControlled;
+    private const float BombTimer = 5f;
+    private float _bombTimeRemaining;
+
     public void Pickup(PlayerController playerPickingUp)
     {
         _isHeld = true;
@@ -51,6 +58,11 @@ public abstract class Bomb : MonoBehaviour
     {
         if(_bombRigidBody != null)
             _bombRigidBody.useGravity = false;
+    }
+
+    public bool IsRemote()
+    {
+        return _isRemoteControlled;
     }
 
     public bool IsHeld()
@@ -125,15 +137,16 @@ public abstract class Bomb : MonoBehaviour
         return _photonView.IsMine;
     }
 
-    public void Initialize(PlayerController spawnedByPlayer, int firePower, int bombNumber)
+    public void Initialize(PlayerController spawnedByPlayer, int firePower, int bombNumber, bool isRemote)
     {
         _spawnedByPlayer = spawnedByPlayer;
-        _photonView.RPC(nameof(InitParams), RpcTarget.All, firePower, bombNumber, spawnedByPlayer.GetPhotonViewId());
+        _photonView.RPC(nameof(InitParams), RpcTarget.All, firePower, bombNumber, spawnedByPlayer.GetPhotonViewId(), isRemote);
     }
 
     [PunRPC]
-    protected void InitParams(int firePower, int bombNumber, int spawnedByPlayerPvId)
+    protected void InitParams(int firePower, int bombNumber, int spawnedByPlayerPvId, bool isRemote)
     {
+        _isRemoteControlled = isRemote;
         if (_spawnedByPlayer == null)
             _spawnedByPlayer = FindObjectsOfType<PlayerController>()
                 .FirstOrDefault(pc => pc.GetPhotonViewId() == spawnedByPlayerPvId);
@@ -141,9 +154,24 @@ public abstract class Bomb : MonoBehaviour
         BombNumber = bombNumber;
         InitBombData();
         _initialized = true;
+
+        // TODO: Could maybe use a 'fuse' inheritance structure based on what type of fuse we're using and handle this hiding/showing more dynamically.
+        if (isRemote)
+        {
+            _fuseMesh.SetActive(false);
+            _remoteMesh.SetActive(true);
+        }
+        else
+        {
+            _fuseMesh.SetActive(true);
+            _remoteMesh.SetActive(false);
+        }
     }
 
-    protected abstract void InitBombData();
+    protected virtual void InitBombData()
+    {
+        _bombTimeRemaining = BombTimer;
+    }
 
     protected void Update()
     {
@@ -152,7 +180,17 @@ public abstract class Bomb : MonoBehaviour
         SyncWithMeshYPos();
         HandleBombCarry();
         HandleBombThrow();
+        HandleTimer();
         HandleExplosion();
+    }
+
+    private void HandleTimer()
+    {
+        if (_isRemoteControlled || _exploding || !_photonView.IsMine || (!RoomManager.GetMatchSettings().RunBombTimerWhenHeld && IsHeld())) return;
+
+        _bombTimeRemaining -= Time.deltaTime;
+        if (_bombTimeRemaining <= 0)
+            Explode();
     }
 
     private void SyncWithMeshYPos()
@@ -188,7 +226,7 @@ public abstract class Bomb : MonoBehaviour
         transform.position += new Vector3(_throwDir.x * Time.deltaTime, 0, _throwDir.z * Time.deltaTime);
     }
 
-    private void HandleExplosion()
+    protected virtual void HandleExplosion()
     {
         if (!_exploding) return;
 
@@ -202,7 +240,6 @@ public abstract class Bomb : MonoBehaviour
 
     public void Explode()
     {
-        GoonsBlastAudioManager.PlayOneShot(GoonsBlastFmodAudioEvents.ExplosionSound, transform.position);
         _photonView.RPC(nameof(StartExplosion), RpcTarget.All);
         if (_spawnedByPlayer != null)
             _spawnedByPlayer.IncrementBombCount(this);
@@ -212,7 +249,7 @@ public abstract class Bomb : MonoBehaviour
     protected void StartExplosion()
     {
         _exploding = true;
-        // TODO: Play sound effect.
+        GoonsBlastAudioManager.PlayOneShot(GoonsBlastFmodAudioEvents.ExplosionSound, transform.position);
         _explosionMesh.transform.position = _bombMesh.transform.position;
         _bombMesh.SetActive(false);
         _explosionMesh.SetActive(true);
