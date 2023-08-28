@@ -26,7 +26,7 @@ public class BombMesh : MonoBehaviour
     {
         // Debug.Log($"BombMesh - ON TRIGGER ENTER w/ {c.name}");
         var explosion = c.GetComponent<Explosion>();
-        if (explosion != null)
+        if (explosion != null && explosion.CausesChainExplosions())
             _parentBomb.Explode();
     }
 }

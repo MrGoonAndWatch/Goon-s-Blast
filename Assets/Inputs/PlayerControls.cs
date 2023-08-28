@@ -98,6 +98,24 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PreviousBombType"",
+                    ""type"": ""Button"",
+                    ""id"": ""02dfb883-648d-400e-9863-cec6cd338300"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""NextBombType"",
+                    ""type"": ""Button"",
+                    ""id"": ""2e89a318-455a-443d-95de-d8d57e6861fb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -318,6 +336,50 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""PickUp"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6fc4bcf8-b10a-437e-b4bb-7b0a635415b7"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PreviousBombType"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bf10617a-683b-4253-883b-94a4d3ed9059"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PreviousBombType"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8daa9fc7-8b43-463c-8ae9-4df45fab84ee"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""NextBombType"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e2ce4d0f-7d95-466a-9040-ea923349ca2a"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""NextBombType"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -960,6 +1022,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Default_Detonate = m_Default.FindAction("Detonate", throwIfNotFound: true);
         m_Default_Run = m_Default.FindAction("Run", throwIfNotFound: true);
         m_Default_PickUp = m_Default.FindAction("PickUp", throwIfNotFound: true);
+        m_Default_PreviousBombType = m_Default.FindAction("PreviousBombType", throwIfNotFound: true);
+        m_Default_NextBombType = m_Default.FindAction("NextBombType", throwIfNotFound: true);
         // Editor
         m_Editor = asset.FindActionMap("Editor", throwIfNotFound: true);
         m_Editor_MoveXZ = m_Editor.FindAction("MoveXZ", throwIfNotFound: true);
@@ -1049,6 +1113,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_Detonate;
     private readonly InputAction m_Default_Run;
     private readonly InputAction m_Default_PickUp;
+    private readonly InputAction m_Default_PreviousBombType;
+    private readonly InputAction m_Default_NextBombType;
     public struct DefaultActions
     {
         private @PlayerControls m_Wrapper;
@@ -1061,6 +1127,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Detonate => m_Wrapper.m_Default_Detonate;
         public InputAction @Run => m_Wrapper.m_Default_Run;
         public InputAction @PickUp => m_Wrapper.m_Default_PickUp;
+        public InputAction @PreviousBombType => m_Wrapper.m_Default_PreviousBombType;
+        public InputAction @NextBombType => m_Wrapper.m_Default_NextBombType;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1094,6 +1162,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @PickUp.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
                 @PickUp.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
                 @PickUp.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPickUp;
+                @PreviousBombType.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPreviousBombType;
+                @PreviousBombType.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPreviousBombType;
+                @PreviousBombType.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnPreviousBombType;
+                @NextBombType.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnNextBombType;
+                @NextBombType.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnNextBombType;
+                @NextBombType.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnNextBombType;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -1122,6 +1196,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @PickUp.started += instance.OnPickUp;
                 @PickUp.performed += instance.OnPickUp;
                 @PickUp.canceled += instance.OnPickUp;
+                @PreviousBombType.started += instance.OnPreviousBombType;
+                @PreviousBombType.performed += instance.OnPreviousBombType;
+                @PreviousBombType.canceled += instance.OnPreviousBombType;
+                @NextBombType.started += instance.OnNextBombType;
+                @NextBombType.performed += instance.OnNextBombType;
+                @NextBombType.canceled += instance.OnNextBombType;
             }
         }
     }
@@ -1348,6 +1428,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnDetonate(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
         void OnPickUp(InputAction.CallbackContext context);
+        void OnPreviousBombType(InputAction.CallbackContext context);
+        void OnNextBombType(InputAction.CallbackContext context);
     }
     public interface IEditorActions
     {

@@ -21,7 +21,7 @@ public class Destructable : TileWithProperties
     private void OnTriggerEnter(Collider c)
     {
         var explosion = c.GetComponent<Explosion>();
-        if (explosion != null)
+        if (explosion != null && explosion.DestroysBlocks())
         {
             if (_initialized && PhotonNetwork.IsMasterClient)
                 _powerupSpawner.SpawnPowerup(this);

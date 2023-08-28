@@ -40,7 +40,7 @@ public class CannonBallBall : MonoBehaviour
         else
         {
             var pushDirection = new Vector3(_rigidbody.velocity.x * _forceMultiplier, _yForce, _rigidbody.velocity.z * _forceMultiplier);
-            player.StartRagdoll(TimeSpan.FromSeconds(_playerRagdollDuration), pushDirection);
+            player.StartRagdoll(_playerRagdollDuration, pushDirection);
         }
     }
 }

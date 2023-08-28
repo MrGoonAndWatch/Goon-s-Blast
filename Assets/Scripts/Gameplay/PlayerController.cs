@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private PlayerAnimationManager _playerAnimationManager;
 
+    [SerializeField] private GameObject _frozenMesh;
+
     private const float DeathPlane = -30.0f;
 
     private float _verticalLookRotation;
@@ -26,10 +28,22 @@ public class PlayerController : MonoBehaviour
     private Vector3 _smoothMoveVelocity;
     private Vector3 _moveAmount;
     private bool _inRagdoll;
-    private TimeSpan _ragdollDuration;
+    private float _ragdollDuration;
+    private bool _isFrozen;
+    private float _freezeDuration;
+    private float BaseFreezeDuration = 3.0f;
 
     private Rigidbody _rigidbody;
     private PhotonView _photonView;
+
+    private GameConstants.BombType _currentBombType = GameConstants.BombType.Normal;
+
+    private static Dictionary<GameConstants.BombType, string> _bombTypePrefabLookup = new Dictionary<GameConstants.BombType, string>
+    {
+        {GameConstants.BombType.Normal, GameConstants.SpawnablePrefabs.BasicBomb},
+        {GameConstants.BombType.Ice, GameConstants.SpawnablePrefabs.IceBomb},
+        {GameConstants.BombType.Stun, GameConstants.SpawnablePrefabs.StunBomb},
+    };
 
     [SerializeField]
     private int _absoluteMaxBombs = 3;
@@ -52,6 +66,8 @@ public class PlayerController : MonoBehaviour
     private InputAction _detonate;
     private InputAction _run;
     private InputAction _pickUp;
+    private InputAction _previousBombType;
+    private InputAction _nextBombType;
     private bool _movingPlayer;
     private Vector2 _movePlayerInput;
     private bool _movingCamera;
@@ -63,6 +79,8 @@ public class PlayerController : MonoBehaviour
 
     private bool _isHoldingSomething;
     private Bomb _heldItem;
+
+    private static readonly int BombTypeCount = Enum.GetValues(typeof(GameConstants.BombType)).Length;
 
     private void OnEnable()
     {
@@ -76,6 +94,8 @@ public class PlayerController : MonoBehaviour
         _detonate = _playerControls.Default.Detonate;
         _run = _playerControls.Default.Run;
         _pickUp = _playerControls.Default.PickUp;
+        _previousBombType = _playerControls.Default.PreviousBombType;
+        _nextBombType = _playerControls.Default.NextBombType;
 
         _camera.Enable();
         _move.Enable();
@@ -85,6 +105,8 @@ public class PlayerController : MonoBehaviour
         _detonate.Enable();
         _run.Enable();
         _pickUp.Enable();
+        _previousBombType.Enable();
+        _nextBombType.Enable();
 
         _camera.performed += OnMoveCamera;
         _camera.canceled += OnMoveCameraEnd;
@@ -98,6 +120,8 @@ public class PlayerController : MonoBehaviour
         _run.canceled += OnRunEnd;
         _pickUp.performed += OnPickUp;
         _pickUp.canceled += OnPickUpEnd;
+        _previousBombType.performed += OnPreviousBombType;
+        _nextBombType.performed += OnNextBombType;
     }
 
     private void OnDisable()
@@ -111,6 +135,8 @@ public class PlayerController : MonoBehaviour
         _detonate.Disable();
         _run.Disable();
         _pickUp.Disable();
+        _previousBombType.Disable();
+        _nextBombType.Disable();
     }
 
     public bool IsAlive()
@@ -161,7 +187,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnMovePlayer(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || _inRagdoll) return;
+        if (_matchEnded || _dead || _inRagdoll || _isFrozen) return;
 
         _movePlayerInput = context.ReadValue<Vector2>();
         _movingPlayer = true;
@@ -174,13 +200,13 @@ public class PlayerController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || !_grounded || _inRagdoll || !_playerAnimationManager.CanMove()) return;
+        if (_matchEnded || _dead || !_grounded || _inRagdoll || _isFrozen || !_playerAnimationManager.CanMove()) return;
         _rigidbody.AddForce(transform.up * _jumpForce);
     }
 
     private void OnLayBomb(InputAction.CallbackContext context)
     {
-        if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll || _isHoldingSomething) return;
+        if (_matchEnded || _dead || _availableBombs <= 0 || _inRagdoll || _isFrozen || _isHoldingSomething) return;
 
         if(_holdingPickUp)
             _photonView.RPC(nameof(StartSpawningBombInHands), RpcTarget.All);
@@ -208,7 +234,10 @@ public class PlayerController : MonoBehaviour
 
         // TODO: use reference from player model's dir instead of this script's obj's forward!
         var spawnPos = transform.position + (_bombSpawnDistance * new Vector3(transform.forward.x, 0, transform.forward.z));
-        var bombObject = PhotonNetwork.Instantiate(GameConstants.SpawnablePrefabs.BasicBomb, spawnPos, Quaternion.identity).GetComponent<Bomb>();
+        var bombPrefabName = _bombTypePrefabLookup.ContainsKey(_currentBombType)
+            ? _bombTypePrefabLookup[_currentBombType]
+            : _bombTypePrefabLookup[GameConstants.BombType.Normal];
+        var bombObject = PhotonNetwork.Instantiate(bombPrefabName, spawnPos, Quaternion.identity).GetComponent<Bomb>();
         _bombs.Add(bombObject);
         var nextBombNumber = 0;
         for (var i = 0; i < _bombs.Count; i++)
@@ -277,6 +306,22 @@ public class PlayerController : MonoBehaviour
         _holdingPickUp = false;
     }
 
+    private void OnPreviousBombType(InputAction.CallbackContext context)
+    {
+        var newValue = (int) _currentBombType - 1;
+        if (newValue < 0)
+            newValue = BombTypeCount - 1;
+        _currentBombType = (GameConstants.BombType) newValue;
+    }
+
+    private void OnNextBombType(InputAction.CallbackContext context)
+    {
+        var newValue = (int)_currentBombType + 1;
+        if (newValue >= BombTypeCount)
+            newValue = 0;
+        _currentBombType = (GameConstants.BombType) newValue;
+    }
+
     [PunRPC]
     public void StartPickUp()
     {
@@ -315,15 +360,12 @@ public class PlayerController : MonoBehaviour
         if (!_matchEnded)
             CheckForDeathPlane();
 
-        if (_inRagdoll)
-        {
-            _ragdollDuration -= TimeSpan.FromSeconds(Time.deltaTime);
-            if(_ragdollDuration.TotalMilliseconds <= 0)
-                EndRagdoll();
-        }
+        UpdateRagdollTimer();
 
         if (!_photonView.IsMine)
             return;
+
+        UpdateFreezeTimer();
 
         if (_movingCamera)
             HandleMoveCamera();
@@ -437,13 +479,22 @@ public class PlayerController : MonoBehaviour
         _remoteBombs = true;
     }
 
-    public void StartRagdoll(TimeSpan duration, Vector3 incomingObjectVelocity)
+    public void StartRagdoll(float duration, Vector3 incomingObjectVelocity)
     {
         _rigidbody.constraints = RigidbodyConstraints.None;
         StopPlayerMovement();
         _inRagdoll = true;
         _ragdollDuration = duration;
         _rigidbody.AddForce(incomingObjectVelocity);
+    }
+
+    private void UpdateRagdollTimer()
+    {
+        if (!_inRagdoll) return;
+
+        _ragdollDuration -= Time.deltaTime;
+        if (_ragdollDuration <= 0)
+            EndRagdoll();
     }
 
     public void EndRagdoll()
@@ -453,6 +504,38 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.identity;
         _inRagdoll = false;
         _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+    }
+
+    // TODO: Could make free last longer based on explosion's firepower.
+    public void Freeze()
+    {
+        _photonView.RPC(nameof(FreezePlayer), RpcTarget.All, BaseFreezeDuration);
+    }
+
+    [PunRPC]
+    public void FreezePlayer(float duration)
+    {
+        _isFrozen = true;
+        _freezeDuration = duration;
+        _frozenMesh.SetActive(true);
+        StopPlayerMovement();
+    }
+
+    private void UpdateFreezeTimer()
+    {
+        if (!_isFrozen) return;
+
+        _freezeDuration -= Time.deltaTime;
+
+        if (_freezeDuration <= 0)
+            _photonView.RPC(nameof(UnfreezePlayer), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void UnfreezePlayer()
+    {
+        _isFrozen = false;
+        _frozenMesh.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider c)
@@ -470,27 +553,17 @@ public class PlayerController : MonoBehaviour
         var explosion = c.GetComponent<Explosion>();
         if (explosion != null)
         {
-            // TODO: Handle having more than 1 hp (via item or stats or whatever).
-            // TODO: Cooldown on how rapidly the player can get hit.
-            var playerWhoLaidBomb = explosion.GetPlayerWhoLaidBomb();
-            string causeOfDeath;
-            if (playerWhoLaidBomb == null)
-            {
-                Debug.Log("Nobody laid this bomb!");
-                causeOfDeath = "an explosion";
-            }
-            else if(playerWhoLaidBomb.GetPhotonViewId() == _photonView.ViewID)
-            {
-                causeOfDeath = $"{GetName()} blew themself up!";
-            }
-            else
-            {
-                playerWhoLaidBomb.AddKill();
-                causeOfDeath = $"{playerWhoLaidBomb.GetName()}'s explosion";
-            }
-            
-            _photonView.RPC(nameof(Die), RpcTarget.All, causeOfDeath, (int)GameConstants.PlayerDeathSound.Bomb);
+            explosion.HitPlayer(this);
         }
+    }
+
+    public void DamagePlayer(string causeOfDamage, PlayerController damageDealer)
+    {
+        // TODO: Handle having more than 1 hp (via item or stats or whatever).
+        // TODO: Cooldown on how rapidly the player can get hit.
+        if(damageDealer != null)
+            damageDealer.AddKill();
+        _photonView.RPC(nameof(Die), RpcTarget.All, causeOfDamage, (int)GameConstants.PlayerDeathSound.Bomb);
     }
 
     private void CheckForDeathPlane()

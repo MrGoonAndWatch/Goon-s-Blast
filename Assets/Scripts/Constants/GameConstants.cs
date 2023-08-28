@@ -56,6 +56,13 @@ namespace Assets.Scripts.Constants
             Bomb = 1
         }
 
+        public enum BombType
+        {
+            Normal = 0,
+            Ice = 1,
+            Stun = 2,
+        }
+
         public static class SpawnablePrefabs
         {
             public const string PlayerManager = "PlayerManager";
@@ -66,6 +73,8 @@ namespace Assets.Scripts.Constants
             public const string CannonBall = "SuddenDeath/CannonBall";
 
             public const string BasicBomb = "Bombs/Bomb-Basic";
+            public const string IceBomb = "Bombs/Bomb-Ice";
+            public const string StunBomb = "Bombs/Bomb-Stun";
 
             public const string PowerupFireUp = "Powerups/Pickup-FireUp";
             public const string PowerupBombUp = "Powerups/Pickup-BombUp";
