@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class IceExplosion : Explosion
 {
     public override bool DestroysBlocks()
@@ -5,7 +7,7 @@ public class IceExplosion : Explosion
         return false;
     }
 
-    public override void HitPlayer(PlayerController targetPlayer)
+    public override void HitPlayer(PlayerController targetPlayer, Collider collision)
     {
         targetPlayer.Freeze();
     }

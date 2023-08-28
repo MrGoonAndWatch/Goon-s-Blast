@@ -12,7 +12,7 @@ public class Explosion : MonoBehaviour
         return true;
     }
 
-    public virtual void HitPlayer(PlayerController targetPlayer)
+    public virtual void HitPlayer(PlayerController targetPlayer, Collider collision)
     {
         var playerWhoLaidBomb = GetPlayerWhoLaidBomb();
         string causeOfDeath;

@@ -481,6 +481,7 @@ public class PlayerController : MonoBehaviour
 
     public void StartRagdoll(float duration, Vector3 incomingObjectVelocity)
     {
+        Debug.Log("Starting ragdoll.");
         _rigidbody.constraints = RigidbodyConstraints.None;
         StopPlayerMovement();
         _inRagdoll = true;
@@ -553,7 +554,7 @@ public class PlayerController : MonoBehaviour
         var explosion = c.GetComponent<Explosion>();
         if (explosion != null)
         {
-            explosion.HitPlayer(this);
+            explosion.HitPlayer(this, c);
         }
     }
 

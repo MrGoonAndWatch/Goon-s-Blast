@@ -5,9 +5,9 @@ using UnityEngine;
 public abstract class Bomb : MonoBehaviour
 {
     [SerializeField] private GameObject _bombMesh;
-    [SerializeField] private GameObject _explosionMesh;
+    [SerializeField] protected GameObject _explosionMesh;
     [SerializeField] private float _baseExplosionEndSize = 3.0f;
-    [SerializeField] private float _explosionIncreaseRatePerSec = 0.5f;
+    [SerializeField] protected float _explosionIncreaseRatePerSec = 0.5f;
     [SerializeField] private GameObject _fuseMesh;
     [SerializeField] private GameObject _remoteMesh;
 
@@ -21,14 +21,14 @@ public abstract class Bomb : MonoBehaviour
     public int BombNumber;
 
     protected bool _initialized;
-    private float _maxExplosionSize;
+    protected float _maxExplosionSize;
 
     public PlayerController _spawnedByPlayer;
     [SerializeField]
     protected PhotonView _photonView;
 
     protected bool _exploding;
-    private float _currentScale = 1.0f;
+    protected float _currentScale = 1.0f;
 
     private bool _isHeld;
     private PlayerController _heldByPlayer;
