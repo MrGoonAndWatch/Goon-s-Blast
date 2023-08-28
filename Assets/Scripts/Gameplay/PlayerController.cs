@@ -413,11 +413,6 @@ public class PlayerController : MonoBehaviour
         //transform.position += transform.TransformDirection(_moveAmount) * Time.fixedDeltaTime;
     }
 
-    private void OnCollisionEnter(Collision c)
-    {
-
-    }
-
     //private void OnCollisionEnter(Collision c)
     //{
     //    //var relativeVelocity = transform.InverseTransformDirection(c.relativeVelocity);
@@ -547,15 +542,22 @@ public class PlayerController : MonoBehaviour
         HandlePowerupCollision(c);
     }
 
+    private void OnCollisionEnter(Collision c)
+    {
+        if (_dead) return;
+
+        var explosion = c.collider.GetComponent<Explosion>();
+        if (explosion != null)
+            explosion.HitPlayer(this, c);
+    }
+
     private void HandleExplosionCollision(Collider c)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
         var explosion = c.GetComponent<Explosion>();
         if (explosion != null)
-        {
-            explosion.HitPlayer(this, c);
-        }
+            explosion.HitPlayer(this);
     }
 
     public void DamagePlayer(string causeOfDamage, PlayerController damageDealer)

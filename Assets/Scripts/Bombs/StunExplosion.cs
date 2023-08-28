@@ -23,13 +23,16 @@ public class StunExplosion : Explosion
         return false;
     }
 
-    public override void HitPlayer(PlayerController targetPlayer, Collider collision)
+    public override void HitPlayer(PlayerController targetPlayer)
+    {
+    }
+
+    public override void HitPlayer(PlayerController targetPlayer, Collision collision)
     {
         var targetPhotonId = targetPlayer.GetPhotonViewId();
         if (_hitPlayers.Contains(targetPhotonId)) return;
         
-        _hitPlayers.Add(targetPhotonId);
-        var hitDir = targetPlayer.transform.position - collision.ClosestPoint(targetPlayer.transform.position);
+        var hitDir = targetPlayer.transform.position - collision.GetContact(0).point;
         targetPlayer.StartRagdoll(_stunDuration, hitDir * _knockbackStrength);
     }
 }
